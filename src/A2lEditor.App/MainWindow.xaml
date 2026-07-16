@@ -9,6 +9,19 @@
                 <MenuItem Header="打开(_O)..." Command="{Binding OpenCommand}" InputGestureText="Ctrl+O"/>
                 <MenuItem Header="保存(_S)" Command="{Binding SaveCommand}" InputGestureText="Ctrl+S"/>
                 <Separator/>
+                <MenuItem Header="Recent Files (_R)" ItemsSource="{Binding RecentFiles}">
+                    <MenuItem.ItemContainerStyle>
+                        <Style TargetType="MenuItem">
+                            <Setter Property="Header" Value="{Binding FullPath}"/>
+                            <Setter Property="Command"
+                                    Value="{Binding DataContext.OpenRecentCommand,
+                                            RelativeSource={RelativeSource AncestorType=Menu}}"/>
+                            <Setter Property="CommandParameter" Value="{Binding FullPath}"/>
+                        </Style>
+                    </MenuItem.ItemContainerStyle>
+                </MenuItem>
+                <MenuItem Header="Clear Recent" Command="{Binding ClearRecentCommand}"/>
+                <Separator/>
                 <MenuItem Header="退出(_X)" Click="ExitMenuItem_Click"/>
             </MenuItem>
         </Menu>
@@ -17,18 +30,23 @@
             <Button Content="保存" Command="{Binding SaveCommand}" x:Name="SaveButton"/>
             <Separator/>
             <TextBlock Text="{Binding ModuleSummary}" VerticalAlignment="Center" Margin="6,0"/>
+            <TextBlock Text="{Binding RecentFilesStatusMessage}" VerticalAlignment="Center" Margin="12,0"
+                       Foreground="DarkOrange" FontStyle="Italic"/>
         </ToolBar>
         <StatusBar DockPanel.Dock="Bottom">
             <TextBlock Text="{Binding StatusMessage}"/>
             <TextBlock Text=" ● " Visibility="{Binding IsDirty, Converter={x:Static ctl:BoolToVisibilityConverter.Instance}}"/>
         </StatusBar>
+        <ctl:ErrorListPanel DockPanel.Dock="Bottom"/>
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="280"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <TreeView Grid.Column="0" x:Name="ModuleTree"/>
+            <TreeView Grid.Column="0" x:Name="ModuleTree"
+                      SelectedItemChanged="ModuleTree_SelectedItemChanged"/>
             <ctl:A2lTextEditor Grid.Column="1"
+                               x:Name="TextEditor"
                                Text="{Binding RawText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                IsDirty="{Binding IsDirty, Mode=TwoWay}"/>
         </Grid>
