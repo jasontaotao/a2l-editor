@@ -15,4 +15,8 @@
   <ItemGroup>
     <ProjectReference Include="../../src/A2lEditor.Core/A2lEditor.Core.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Include="../../samples/**/*" Link="samples/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>
