@@ -65,6 +65,7 @@ public partial class MainWindowViewModel : ObservableObject
     private void JumpToLine(int? line)
     {
         if (line is null or < 1) return;
+        if (string.IsNullOrEmpty(RawText)) return;
         NavigateToLineRequested?.Invoke(line.Value);
     }
 

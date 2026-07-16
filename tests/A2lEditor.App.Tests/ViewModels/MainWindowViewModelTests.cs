@@ -111,13 +111,26 @@ public partial class MainWindowViewModelTests
     public void JumpToLine_EmitsNavigateToLineRequested()
     {
         var dialog = new Mock<IDialogService>();
-        var vm = new MainWindowViewModel(dialog.Object);
+        var vm = new MainWindowViewModel(dialog.Object) { RawText = "some content" };
         int? captured = null;
         vm.NavigateToLineRequested += line => captured = line;
 
         vm.JumpToLineCommand.Execute(42);
 
         captured.Should().Be(42);
+    }
+
+    [Fact]
+    public void JumpToLine_EmptyRawText_DoesNotEmit()
+    {
+        var dialog = new Mock<IDialogService>();
+        var vm = new MainWindowViewModel(dialog.Object);  // RawText defaults to ""
+        int? captured = null;
+        vm.NavigateToLineRequested += line => captured = line;
+
+        vm.JumpToLineCommand.Execute(42);
+
+        captured.Should().BeNull("spec section 6: empty RawText → JumpToLine no-op");
     }
 
     [Fact]
