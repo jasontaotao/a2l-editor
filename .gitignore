@@ -1,0 +1,32 @@
+# Build outputs
+bin/
+obj/
+*.user
+*.suo
+
+# VS / Rider
+.vs/
+.idea/
+*.swp
+
+# Coverage
+TestResults/
+coverage.*.xml
+*.coverage
+
+# Publish
+publish/
+Release/
+*.zip
+*.exe
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Logs
+*.log
+
+# PM artifacts (spec/plan/ledger live outside source tree)
+.superpowers/
+docs/superpowers/
