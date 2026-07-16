@@ -5,6 +5,7 @@ public sealed record A2lDocument(
     string ProjectName,
     string ProjectComment,
     string HeaderComment,
+    A2lModCommon? ModCommon,
     IReadOnlyList<A2lModule> Modules,
     string RawText,
     int SourceLineCount)

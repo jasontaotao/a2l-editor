@@ -30,6 +30,7 @@ public class A2lDocumentWriterTests
         ProjectName: "MyProject",
         ProjectComment: "Project comment",
         HeaderComment: "Header comment",
+        ModCommon: null,
         Modules: new List<A2lModule>
         {
             new(
@@ -53,6 +54,7 @@ public class A2lDocumentWriterTests
                 CompuMethods: new List<A2lCompuMethod>(),
                 RecordLayouts: new List<A2lRecordLayout>(),
                 Groups: new List<A2lGroup>(),
+                ModPar: null,
                 SourceLines: new LineRange(0, 0))
         },
         RawText: "",
@@ -153,6 +155,7 @@ public class A2lDocumentWriterTests
             ProjectName: "P",
             ProjectComment: "comment",
             HeaderComment: "",
+            ModCommon: null,
             Modules: Array.Empty<A2lModule>(),
             RawText: "",
             SourceLineCount: 1);
@@ -177,6 +180,7 @@ public class A2lDocumentWriterTests
             ProjectName: "P",
             ProjectComment: "comment",
             HeaderComment: "header",
+            ModCommon: null,
             Modules: Array.Empty<A2lModule>(),
             RawText: "",
             SourceLineCount: 1);
@@ -199,6 +203,7 @@ public class A2lDocumentWriterTests
             ProjectName: "P",
             ProjectComment: "",
             HeaderComment: "MyHeader",
+            ModCommon: null,
             Modules: Array.Empty<A2lModule>(),
             RawText: "",
             SourceLineCount: 1);
@@ -220,6 +225,7 @@ public class A2lDocumentWriterTests
             ProjectName: "P",
             ProjectComment: "with \"quote\" inside",
             HeaderComment: "",
+            ModCommon: null,
             Modules: Array.Empty<A2lModule>(),
             RawText: "",
             SourceLineCount: 1);

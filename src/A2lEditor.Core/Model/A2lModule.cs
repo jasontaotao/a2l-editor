@@ -9,4 +9,5 @@ public sealed record A2lModule(
     IReadOnlyList<A2lCompuMethod> CompuMethods,
     IReadOnlyList<A2lRecordLayout> RecordLayouts,
     IReadOnlyList<A2lGroup> Groups,
+    string? ModPar,
     LineRange SourceLines);

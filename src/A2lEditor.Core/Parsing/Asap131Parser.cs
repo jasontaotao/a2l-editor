@@ -93,7 +93,7 @@ public sealed class Asap131Parser
 
         var doc = new A2lDocument(
             version, projectName, projectComment, headerComment,
-            modules, _rawText, _rawText.Count(c => c == '\n') + 1);
+            null, modules, _rawText, _rawText.Count(c => c == '\n') + 1);
 
         return _errors.Any(e => e.Severity == ErrorSeverity.Fatal)
             ? ParseResult<A2lDocument>.Failure(_errors)
@@ -159,7 +159,7 @@ public sealed class Asap131Parser
         int endLine = Current.Line;
         range = new LineRange(startLine, endLine);
         return new A2lModule(name, comment, measurements, characteristics, axisPts,
-            compuMethods, recordLayouts, groups, range);
+            compuMethods, recordLayouts, groups, null, range);
     }
 
     private A2lMeasurement ParseMeasurement()

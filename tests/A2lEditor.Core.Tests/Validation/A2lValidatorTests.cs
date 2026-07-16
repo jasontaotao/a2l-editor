@@ -20,8 +20,9 @@ public class A2lValidatorTests
             Array.Empty<A2lCompuMethod>(),
             Array.Empty<A2lRecordLayout>(),
             Array.Empty<A2lGroup>(),
+            null,
             new LineRange(1, 2));
-        var doc = new A2lDocument(A2lVersion.V1_31, "P", "", "", new[] { m },
+        var doc = new A2lDocument(A2lVersion.V1_31, "P", "", "", null, new[] { m },
             "", 1);
         var v = new A2lValidator();
         var errors = v.Validate(doc);
@@ -31,7 +32,7 @@ public class A2lValidatorTests
     [Fact]
     public void Validate_EmptyDocument_ReturnsProjectNameError()
     {
-        var doc = new A2lDocument(A2lVersion.V1_31, "", "", "", Array.Empty<A2lModule>(), "", 1);
+        var doc = new A2lDocument(A2lVersion.V1_31, "", "", "", null, Array.Empty<A2lModule>(), "", 1);
         var v = new A2lValidator();
         var errors = v.Validate(doc);
         errors.Should().Contain(e => e.Message.Contains("PROJECT name"));
@@ -50,8 +51,9 @@ public class A2lValidatorTests
             Array.Empty<A2lCompuMethod>(),
             Array.Empty<A2lRecordLayout>(),
             Array.Empty<A2lGroup>(),
+            null,
             new LineRange(1, 4));
-        var doc = new A2lDocument(A2lVersion.V1_31, "P", "", "", new[] { m },
+        var doc = new A2lDocument(A2lVersion.V1_31, "P", "", "", null, new[] { m },
             "", 1);
         var v = new A2lValidator();
         var errors = v.Validate(doc);
@@ -72,8 +74,9 @@ public class A2lValidatorTests
             },
             Array.Empty<A2lRecordLayout>(),
             Array.Empty<A2lGroup>(),
+            null,
             new LineRange(1, 5));
-        var doc = new A2lDocument(A2lVersion.V1_31, "P", "", "", new[] { m },
+        var doc = new A2lDocument(A2lVersion.V1_31, "P", "", "", null, new[] { m },
             "", 1);
         var v = new A2lValidator();
         var errors = v.Validate(doc);
