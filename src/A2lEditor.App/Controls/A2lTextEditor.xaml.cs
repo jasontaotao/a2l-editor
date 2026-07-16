@@ -1,5 +1,9 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Threading;
+using ICSharpCode.AvalonEdit.Document;
+using ICSharpCode.AvalonEdit.Rendering;
 
 namespace A2lEditor.App.Controls;
 
@@ -41,6 +45,70 @@ public partial class A2lTextEditor : UserControl
         {
             Text = Editor.Text;
             IsDirty = true;
+        }
+    }
+
+    private DispatcherTimer? _highlightTimer;
+
+    /// <summary>
+    /// Navigate to 1-based line and select entire line.
+    /// Out-of-range lines are clamped (no exception).
+    /// </summary>
+    public void ScrollToLine(int line)
+    {
+        if (string.IsNullOrEmpty(Editor.Text)) return;
+        if (line < 1) line = 1;
+        var docLine = Editor.Document.GetLineByNumber(Math.Min(line, Editor.Document.LineCount));
+        Editor.ScrollToLine(docLine.LineNumber);
+        Editor.Select(docLine.Offset, docLine.Length);
+    }
+
+    /// <summary>
+    /// Briefly highlight a line for 0.5s. Out-of-range lines are ignored.
+    /// </summary>
+    public void HighlightLine(int line)
+    {
+        if (string.IsNullOrEmpty(Editor.Text)) return;
+        if (line < 1 || line > Editor.Document.LineCount) return;
+
+        var bgColor = Color.FromArgb(80, 255, 255, 0); // semi-transparent yellow
+        var docLine = Editor.Document.GetLineByNumber(line);
+        var marker = new HighlightLineBackgroundMarker(docLine.Offset, docLine.Length, bgColor);
+        Editor.TextArea.TextView.LineTransformers.Add(marker);
+
+        _highlightTimer?.Stop();
+        _highlightTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
+        _highlightTimer.Tick += (_, _) =>
+        {
+            Editor.TextArea.TextView.LineTransformers.Remove(marker);
+            _highlightTimer!.Stop();
+        };
+        _highlightTimer.Start();
+    }
+
+    private sealed class HighlightLineBackgroundMarker : DocumentColorizingTransformer
+    {
+        private readonly int _start;
+        private readonly int _end;
+        private readonly Color _color;
+
+        public HighlightLineBackgroundMarker(int start, int end, Color color)
+        {
+            _start = start;
+            _end = end;
+            _color = color;
+        }
+
+        protected override void ColorizeLine(DocumentLine line)
+        {
+            if (line.Offset + line.Length < _start || line.Offset > _end) return;
+            ChangeLinePart(
+                Math.Max(line.Offset, _start),
+                Math.Min(line.Offset + line.Length, _end),
+                visualLine =>
+                {
+                    visualLine.TextRunProperties.SetBackgroundBrush(new SolidColorBrush(_color));
+                });
         }
     }
 }
