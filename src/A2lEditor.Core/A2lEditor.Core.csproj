@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <RootNamespace>A2lEditor.Core</RootNamespace>
+    <AssemblyName>A2lEditor.Core</AssemblyName>
+  </PropertyGroup>
+</Project>

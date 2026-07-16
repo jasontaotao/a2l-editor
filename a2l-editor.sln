@@ -1,4 +1,4 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Placeholder", "src\Placeholder\Placeholder.csproj", "{00000000-0000-0000-0000-000000000000}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "A2lEditor.Core", "src\A2lEditor.Core\A2lEditor.Core.csproj", "{A2LED1C0-0001-0000-0000-000000000001}"
 EndProject
