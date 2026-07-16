@@ -32,8 +32,9 @@ public static class TokenClassifier
                 int absStart = FindOffset(text, cursor, token);
                 if (absStart < 0) break; // safety
 
-                // For string literals, the Lexer drops the surrounding quotes;
-                // back up to include them so the span covers the entire A2L literal.
+                // StringLiteral: Lexer.ReadString (Asap131Lexer.cs:117-136) consumes both opening
+                // and closing quotes. token.Text is the inner content; absStart already points
+                // to the opening quote. We extend length by 2 to cover both quote characters.
                 int length = token.Text.Length;
                 if (token.Kind == TokenKind.StringLiteral)
                 {
@@ -60,7 +61,8 @@ public static class TokenClassifier
         {
             if (deduped.Count == 0 || s.StartOffset >= deduped[^1].StartOffset + deduped[^1].Length)
                 deduped.Add(s);
-            // else: overlap; skip the second span (Comment spans can clash with token starts; prefer tokens)
+            // else: overlap; skip the second span (Keep the first span seen at each offset;
+            // defensive; spec guarantees no overlap.)
         }
         return deduped;
     }
@@ -70,8 +72,10 @@ public static class TokenClassifier
         // Lexer skips whitespace + comments; track cursor manually.
         // For v0.2 simplicity, use a naive search from cursor for token.Text.
         // (Real production would track line/col from token → absolute offset via Lexer extension.)
-        int start = text.IndexOf(token.Text, fromCursor, StringComparison.Ordinal);
-        return start >= 0 ? start : fromCursor; // fallback: assume contiguous
+        // Returns -1 on miss so the caller can stop tokenizing and emit partial spans,
+        // rather than silently producing wrong offsets that would violate the
+        // "sorted by StartOffset, non-overlapping" invariant.
+        return text.IndexOf(token.Text, fromCursor, StringComparison.Ordinal);
     }
 
     private static TokenCategory MapCategory(Token token)
