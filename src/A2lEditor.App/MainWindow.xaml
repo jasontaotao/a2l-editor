@@ -1,0 +1,8 @@
+<Window x:Class="A2lEditor.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="a2l-editor" Height="600" Width="900">
+    <Grid>
+        <TextBlock Text="a2l-editor v0.1.1 skeleton" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    </Grid>
+</Window>
