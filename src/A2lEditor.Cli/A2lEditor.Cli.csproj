@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>A2lEditor.Cli</RootNamespace>
+    <AssemblyName>a2l-editor</AssemblyName>
+    <!-- System.CommandLine 2.0 beta4's built-in version option prints
+         AssemblyInformationalVersion when present, else AssemblyVersion.
+         Setting both keeps the built-in printing the spec version "0.1.1". -->
+    <Version>0.1.1</Version>
+    <InformationalVersion>0.1.1</InformationalVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\A2lEditor.Core\A2lEditor.Core.csproj" />
+  </ItemGroup>
+</Project>
