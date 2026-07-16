@@ -2,8 +2,35 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ctl="clr-namespace:A2lEditor.App.Controls"
-        Title="a2l-editor" Height="600" Width="900">
-    <Grid>
-        <ctl:A2lTextEditor x:Name="Editor"/>
-    </Grid>
+        Title="{Binding Title}" Height="600" Width="900">
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="文件(_F)">
+                <MenuItem Header="打开(_O)..." Command="{Binding OpenCommand}" InputGestureText="Ctrl+O"/>
+                <MenuItem Header="保存(_S)" Command="{Binding SaveCommand}" InputGestureText="Ctrl+S"/>
+                <Separator/>
+                <MenuItem Header="退出(_X)" Click="ExitMenuItem_Click"/>
+            </MenuItem>
+        </Menu>
+        <ToolBar DockPanel.Dock="Top">
+            <Button Content="打开" Command="{Binding OpenCommand}" x:Name="OpenButton"/>
+            <Button Content="保存" Command="{Binding SaveCommand}" x:Name="SaveButton"/>
+            <Separator/>
+            <TextBlock Text="{Binding ModuleSummary}" VerticalAlignment="Center" Margin="6,0"/>
+        </ToolBar>
+        <StatusBar DockPanel.Dock="Bottom">
+            <TextBlock Text="{Binding StatusMessage}"/>
+            <TextBlock Text=" ● " Visibility="{Binding IsDirty, Converter={x:Static ctl:BoolToVisibilityConverter.Instance}}"/>
+        </StatusBar>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="280"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <TreeView Grid.Column="0" x:Name="ModuleTree"/>
+            <ctl:A2lTextEditor Grid.Column="1"
+                               Text="{Binding RawText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                               IsDirty="{Binding IsDirty, Mode=TwoWay}"/>
+        </Grid>
+    </DockPanel>
 </Window>
