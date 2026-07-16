@@ -70,9 +70,12 @@ public sealed class Asap131Parser
                 if (Current.Kind == TokenKind.Identifier) { projectName = Consume().Text; }
                 if (Current.Kind == TokenKind.StringLiteral) { projectComment = Consume().Text; }
 
-                // HEADER (optional)
-                if (TryConsumeKeyword("/begin") && TryConsumeKeyword("HEADER"))
+                // HEADER (optional) — peek before consume to avoid speculative /begin consumption
+                if (Current.Kind == TokenKind.Keyword && Current.Text == "/begin" &&
+                    _pos + 1 < _tokens.Count && _tokens[_pos + 1].Text == "HEADER")
                 {
+                    Consume(); // /begin
+                    Consume(); // HEADER
                     if (Current.Kind == TokenKind.StringLiteral)
                         headerComment = Consume().Text;
                     TryConsumeKeyword("/end");
@@ -378,6 +381,15 @@ public sealed class Asap131Parser
             string.Equals(Current.Text, kw, StringComparison.OrdinalIgnoreCase))
         {
             Consume();
+            // A2L grammar: "/end BLOCK_NAME" is written as two tokens. After consuming
+            // /end, also consume the matching block-name keyword when present (so callers
+            // like TryConsumeKeyword("/end") don't leak the trailing BLOCK_NAME token).
+            if (kw == "/end" && _pos < _tokens.Count &&
+                Current.Kind == TokenKind.Keyword &&
+                Current.Text != "/begin" && Current.Text != "/end")
+            {
+                Consume();
+            }
             return true;
         }
         return false;
