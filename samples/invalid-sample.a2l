@@ -1,0 +1,7 @@
+ASAP2_VERSION  1 31
+/begin PROJECT Broken
+ /begin MODULE Test
+  /begin MEASUREMENT /* 缺名字 + 缺 datatype */
+  /end MEASUREMENT
+ /end MODULE
+/end PROJECT
