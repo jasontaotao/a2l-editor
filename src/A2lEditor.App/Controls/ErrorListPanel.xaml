@@ -1,0 +1,35 @@
+<UserControl x:Class="A2lEditor.App.Controls.ErrorListPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ctl="clr-namespace:A2lEditor.App.Controls"
+             x:Name="Root">
+    <Expander x:Name="ErrorExpander"
+              IsExpanded="False"
+              Background="#FFF5F5F5"
+              BorderBrush="#FF888888"
+              BorderThickness="0,1,0,0">
+        <Expander.Header>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Errors: " FontWeight="SemiBold"/>
+                <TextBlock x:Name="ErrorCountText" Text="0" FontWeight="SemiBold"/>
+            </StackPanel>
+        </Expander.Header>
+        <ListBox x:Name="ErrorList"
+                 ItemsSource="{Binding ParseErrors, ElementName=Root}"
+                 BorderThickness="0"
+                 MaxHeight="200"
+                 MouseDoubleClick="ErrorList_MouseDoubleClick">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding Severity}" Width="70" Foreground="{Binding Severity, Converter={x:Static ctl:SeverityToBrushConverter.Instance}}"/>
+                        <TextBlock Text="{Binding Line}" Width="40"/>
+                        <TextBlock Text=":"/>
+                        <TextBlock Text="{Binding Column}" Width="40"/>
+                        <TextBlock Text="{Binding Message}" Margin="6,0,0,0"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Expander>
+</UserControl>
