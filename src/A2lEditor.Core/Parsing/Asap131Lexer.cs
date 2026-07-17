@@ -26,6 +26,7 @@ public sealed class Asap131Lexer
         "/begin", "/end", "ASAP2_VERSION",
         "PROJECT", "MODULE", "HEADER",
         "MOD_PAR", "MOD_COMMON", "BYTE_ORDER", "MSB_LAST", "MSB_FIRST",
+        "DATA_SIZE", "ALIGNMENT_BYTE_ORDER",
         "RECORD_LAYOUT", "FNC_VALUES", "COLUMN_DIR", "DIRECT", "ROW_DIR",
         "AXIS_PTS_X", "INDEX_INCR", "INDEX_DECR",
         "COMPU_METHOD", "RAT_FUNC", "TAB_VERB", "TAB_NOINTP", "IDENTICAL",
@@ -33,7 +34,8 @@ public sealed class Asap131Lexer
         "MEASUREMENT", "ECU_ADDRESS", "RESOLUTION", "ACCURACY",
         "LOWER_LIMIT", "UPPER_LIMIT",
         "CHARACTERISTIC", "AXIS_PTS", "INPUT_QUANTITY", "NUMBER",
-        "GROUP", "ROOT", "REF_MEASUREMENT", "REF_CHARACTERISTIC"
+        "GROUP", "ROOT", "REF_MEASUREMENT", "REF_CHARACTERISTIC",
+        "AXIS_DESCR", "USER_RIGHTS", "VERSION"
     };
 
     private static readonly HashSet<string> DataTypes = new(StringComparer.Ordinal)

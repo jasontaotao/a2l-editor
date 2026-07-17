@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using A2lEditor.Core.Model;
 using A2lEditor.Core.Parsing;
@@ -253,5 +254,94 @@ public class Asap131ParserTests
         reParsed!.ModCommon.Should().NotBeNull();
         reParsed.ModCommon!.ByteOrder.Should().Be(doc.ModCommon.ByteOrder);
         reParsed.Modules[0].ModPar.Should().Be(doc.Modules[0].ModPar);
+    }
+
+    [Fact]
+    public void Parse_AxisDescr_StoresAttributeAndLimits()
+    {
+        const string text = "ASAP2_VERSION 1 61\n"
+            + "/begin PROJECT P\n"
+            + " /begin MODULE M \"\"\n"
+            + "  /begin AXIS_DESCR \"CURVE_AXIS\" Time CM_Time 100 0 1000 /end AXIS_DESCR\n"
+            + " /end MODULE\n"
+            + "/end PROJECT\n";
+        var result = Asap131Parser.ParseText(text);
+        result.HasFatalErrors.Should().BeFalse(
+            $"no fatal errors expected; actual: {string.Join("; ", result.Errors.Select(e => $"L{e.Line}:{e.Message}"))}");
+        result.Value!.Modules[0].AxisDescr.Should().HaveCount(1);
+        result.Value!.Modules[0].AxisDescr[0].Attribute.Should().Be("CURVE_AXIS");
+        result.Value!.Modules[0].AxisDescr[0].InputQuantity.Should().Be("Time");
+        result.Value!.Modules[0].AxisDescr[0].Conversion.Should().Be("CM_Time");
+        result.Value!.Modules[0].AxisDescr[0].MaxNumberOfAxisPoints.Should().Be(100);
+        result.Value!.Modules[0].AxisDescr[0].LowerLimit.Should().Be("0");
+        result.Value!.Modules[0].AxisDescr[0].UpperLimit.Should().Be("1000");
+    }
+
+    [Fact]
+    public void Parse_UserRights_StoresUserIdAndAccess()
+    {
+        const string text = "ASAP2_VERSION 1 61\n"
+            + "/begin PROJECT P\n"
+            + " /begin MODULE M \"\"\n"
+            + "  /begin USER_RIGHTS ECU_MASTER LEVEL_1 LEVEL_2 CALC /end USER_RIGHTS\n"
+            + " /end MODULE\n"
+            + "/end PROJECT\n";
+        var result = Asap131Parser.ParseText(text);
+        result.HasFatalErrors.Should().BeFalse(
+            $"no fatal errors expected; actual: {string.Join("; ", result.Errors.Select(e => $"L{e.Line}:{e.Message}"))}");
+        result.Value!.Modules[0].UserRights.Should().HaveCount(1);
+        result.Value!.Modules[0].UserRights[0].UserId.Should().Be("ECU_MASTER");
+        result.Value!.Modules[0].UserRights[0].ReadAccess.Should().Be("LEVEL_1");
+        result.Value!.Modules[0].UserRights[0].WriteAccess.Should().Be("LEVEL_2");
+        result.Value!.Modules[0].UserRights[0].AccessMethod.Should().Be("CALC");
+    }
+
+    [Fact]
+    public void Parse_Version_StoresVersionNoAndVendor()
+    {
+        const string text = "ASAP2_VERSION 1 61\n"
+            + "/begin PROJECT P\n"
+            + " /begin MODULE M \"\"\n"
+            + "  /begin VERSION \"1.6.1\" 2024-01-15 \"ACME Corp\" \"Description\" /end VERSION\n"
+            + " /end MODULE\n"
+            + "/end PROJECT\n";
+        var result = Asap131Parser.ParseText(text);
+        result.HasFatalErrors.Should().BeFalse(
+            $"no fatal errors expected; actual: {string.Join("; ", result.Errors.Select(e => $"L{e.Line}:{e.Message}"))}");
+        result.Value!.Modules[0].VersionInfo.Should().HaveCount(1);
+        result.Value!.Modules[0].VersionInfo[0].VersionNo.Should().Be("1.6.1");
+        result.Value!.Modules[0].VersionInfo[0].Date.Should().Be(new DateTime(2024, 1, 15));
+        result.Value!.Modules[0].VersionInfo[0].Vendor.Should().Be("ACME Corp");
+        result.Value!.Modules[0].VersionInfo[0].Description.Should().Be("Description");
+    }
+
+    [Fact]
+    public void Parse_ModCommonDataSize_StoresDataSize()
+    {
+        const string text = "ASAP2_VERSION 1 61\n"
+            + "/begin PROJECT P\n"
+            + " /begin MOD_COMMON \"\" BYTE_ORDER MSB_LAST DATA_SIZE 32 /end MOD_COMMON\n"
+            + " /begin MODULE M \"\" /end MODULE\n"
+            + "/end PROJECT\n";
+        var result = Asap131Parser.ParseText(text);
+        result.HasFatalErrors.Should().BeFalse(
+            $"no fatal errors expected; actual: {string.Join("; ", result.Errors.Select(e => $"L{e.Line}:{e.Message}"))}");
+        result.Value!.ModCommon.Should().NotBeNull();
+        result.Value!.ModCommon!.DataSize.Should().Be(32);
+    }
+
+    [Fact]
+    public void Parse_ModCommonAlignmentByteOrder_StoresAlignmentByteOrder()
+    {
+        const string text = "ASAP2_VERSION 1 61\n"
+            + "/begin PROJECT P\n"
+            + " /begin MOD_COMMON \"\" BYTE_ORDER MSB_LAST ALIGNMENT_BYTE_ORDER MSB_FIRST /end MOD_COMMON\n"
+            + " /begin MODULE M \"\" /end MODULE\n"
+            + "/end PROJECT\n";
+        var result = Asap131Parser.ParseText(text);
+        result.HasFatalErrors.Should().BeFalse(
+            $"no fatal errors expected; actual: {string.Join("; ", result.Errors.Select(e => $"L{e.Line}:{e.Message}"))}");
+        result.Value!.ModCommon.Should().NotBeNull();
+        result.Value!.ModCommon!.AlignmentByteOrder.Should().Be(A2lByteOrder.MSB_FIRST);
     }
 }

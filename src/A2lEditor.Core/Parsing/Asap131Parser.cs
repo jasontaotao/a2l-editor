@@ -143,6 +143,9 @@ public sealed class Asap131Parser
         var compuMethods = new List<A2lCompuMethod>();
         var recordLayouts = new List<A2lRecordLayout>();
         var groups = new List<A2lGroup>();
+        var axisDescr = new List<A2lAxisDescr>();
+        var userRights = new List<A2lUserRights>();
+        var versionInfo = new List<A2lVersionInfo>();
         string? moduleModPar = null;  // v0.3: track MOD_PAR comment
 
         while (!(Current.Kind == TokenKind.Keyword && Current.Text == "/end"))
@@ -192,6 +195,15 @@ public sealed class Asap131Parser
                         _moduleModCommon = ParseModCommonBody();
                         break;
                     }
+                    case "AXIS_DESCR":
+                        axisDescr.Add(ParseAxisDescr());
+                        break;
+                    case "USER_RIGHTS":
+                        userRights.Add(ParseUserRights());
+                        break;
+                    case "VERSION":
+                        versionInfo.Add(ParseVersionInfo());
+                        break;
                     default:
                         _errors.Add(Error($"Unknown block {blockName}, skipped", ErrorSeverity.Warning));
                         SkipToMatchingEnd();
@@ -208,7 +220,7 @@ public sealed class Asap131Parser
         range = new LineRange(startLine, endLine);
         return new A2lModule(name, comment, measurements, characteristics, axisPts,
             compuMethods, recordLayouts, groups, moduleModPar,
-            new List<A2lAxisDescr>(), new List<A2lUserRights>(), new List<A2lVersionInfo>(), range);
+            axisDescr, userRights, versionInfo, range);
     }
 
     // v0.3 PATCH: stash for MOD_COMMON found inside a MODULE block (v1.61 layout).
@@ -224,6 +236,9 @@ public sealed class Asap131Parser
         int mcStartLine = Current.Line;
         string mcComment = Current.Kind == TokenKind.StringLiteral ? Consume().Text : "";
         A2lByteOrder byteOrder = A2lByteOrder.MSB_LAST;
+        ulong? dataSize = null;
+        A2lByteOrder? alignmentByteOrder = null;
+
         if (TryConsumeKeyword("BYTE_ORDER"))
         {
             if (Current.Kind == TokenKind.Keyword && Current.Text == "MSB_FIRST")
@@ -234,8 +249,25 @@ public sealed class Asap131Parser
                 _errors.Add(Error("Expected MSB_FIRST or MSB_LAST after BYTE_ORDER",
                                    ErrorSeverity.Warning));
         }
+        if (TryConsumeKeyword("DATA_SIZE"))
+        {
+            if (Current.Kind == TokenKind.Number && ulong.TryParse(Consume().Text, out var n))
+            {
+                dataSize = n;
+            }
+        }
+        if (TryConsumeKeyword("ALIGNMENT_BYTE_ORDER"))
+        {
+            if (Current.Kind == TokenKind.Keyword && Current.Text == "MSB_FIRST")
+            { alignmentByteOrder = A2lByteOrder.MSB_FIRST; Consume(); }
+            else if (Current.Kind == TokenKind.Keyword && Current.Text == "MSB_LAST")
+            { alignmentByteOrder = A2lByteOrder.MSB_LAST; Consume(); }
+            else
+                _errors.Add(Error("Expected MSB_FIRST or MSB_LAST after ALIGNMENT_BYTE_ORDER",
+                                   ErrorSeverity.Warning));
+        }
         TryConsumeKeyword("/end");
-        return new A2lModCommon(mcComment, byteOrder, null, null,
+        return new A2lModCommon(mcComment, byteOrder, dataSize, alignmentByteOrder,
             new LineRange(mcStartLine, Current.Line));
     }
 
@@ -389,6 +421,76 @@ public sealed class Asap131Parser
         }
         TryConsumeKeyword("/end");
         return new A2lGroup(name, longId, isRoot, refMeasurements, refCharacteristics,
+            new LineRange(startLine, Current.Line));
+    }
+
+    private A2lAxisDescr ParseAxisDescr()
+    {
+        int startLine = Current.Line;
+        string attribute = Current.Kind == TokenKind.StringLiteral ? Consume().Text : "";
+        string inputQty = Current.Kind == TokenKind.Identifier ? Consume().Text : "";
+        string conversion = Current.Kind == TokenKind.Identifier ? Consume().Text : "";
+        ulong maxAxis = 0;
+        if (Current.Kind == TokenKind.Number && ulong.TryParse(Consume().Text, out var n))
+        {
+            maxAxis = n;
+        }
+        string lower = ParseNumber();
+        string upper = ParseNumber();
+        TryConsumeKeyword("/end");
+        return new A2lAxisDescr(attribute, inputQty, conversion, maxAxis, lower, upper,
+            new LineRange(startLine, Current.Line));
+    }
+
+    private A2lUserRights ParseUserRights()
+    {
+        int startLine = Current.Line;
+        // userId may be quoted ("X") or unquoted identifier per ASAP2 spec
+        // (v1.31 sample 1 puts it in quotes; some v1.61 files omit quotes).
+        string userId;
+        if (Current.Kind == TokenKind.StringLiteral || Current.Kind == TokenKind.Identifier)
+        {
+            userId = Consume().Text;
+        }
+        else { userId = ""; }
+        string readAccess = Current.Kind == TokenKind.Identifier ? Consume().Text : "";
+        string writeAccess = Current.Kind == TokenKind.Identifier ? Consume().Text : "";
+        string accessMethod = Current.Kind == TokenKind.Identifier ? Consume().Text : "";
+        TryConsumeKeyword("/end");
+        return new A2lUserRights(userId, readAccess, writeAccess, accessMethod,
+            new LineRange(startLine, Current.Line));
+    }
+
+    private A2lVersionInfo ParseVersionInfo()
+    {
+        int startLine = Current.Line;
+        string versionNo = Current.Kind == TokenKind.StringLiteral ? Consume().Text : "";
+        DateTime date = DateTime.MinValue;
+        // Date is commonly written unquoted (e.g. 2024-01-15) — the lexer treats
+        // '2024-01-15' as a single Number token (digits + '-' are allowed in number
+        // bodies). Accept both StringLiteral and Number so we capture the source text
+        // before invoking DateTime.TryParse with InvariantCulture.
+        string dateStr = "";
+        if (Current.Kind == TokenKind.StringLiteral || Current.Kind == TokenKind.Number)
+        {
+            dateStr = Consume().Text;
+        }
+        if (!string.IsNullOrEmpty(dateStr))
+        {
+            DateTime.TryParse(dateStr, CultureInfo.InvariantCulture,
+                DateTimeStyles.None, out date);
+        }
+        // Vendor may be a quoted string (e.g. "ACME Corp" — common when vendor
+        // name contains a space) or a bare identifier (e.g. ACME_Corp).
+        string vendor;
+        if (Current.Kind == TokenKind.StringLiteral || Current.Kind == TokenKind.Identifier)
+        {
+            vendor = Consume().Text;
+        }
+        else { vendor = ""; }
+        string description = Current.Kind == TokenKind.StringLiteral ? Consume().Text : "";
+        TryConsumeKeyword("/end");
+        return new A2lVersionInfo(versionNo, date, vendor, description,
             new LineRange(startLine, Current.Line));
     }
 
