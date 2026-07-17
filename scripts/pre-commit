@@ -1,0 +1,43 @@
+#!/bin/sh
+# scripts/pre-commit
+# Git pre-commit hook: runs coverage gate check.
+# Install: `cp scripts/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit`
+
+set -e
+
+echo "[pre-commit] Running coverage gate check..."
+
+# Resolve repo root from this script's location (hooks can be invoked from any cwd).
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$REPO_ROOT"
+
+# Run dotnet test with coverage. Use --nologo + --verbosity quiet so the commit
+# log stays clean. The collect flag emits TestResults/{guid}/coverage.cobertura.xml.
+dotnet test a2l-editor.sln --collect:"XPlat Code Coverage" --results-directory ./TestResults --nologo --verbosity quiet
+
+if [ $? -ne 0 ]; then
+    echo "[pre-commit] dotnet test failed; commit blocked"
+    exit 1
+fi
+
+# Run verify-coverage.ps1 (pwsh preferred, fall back to powershell 5.1).
+# Per spec-audit 2026-07-17: pwsh is NOT installed on this system; powershell 5.1 IS.
+if command -v pwsh >/dev/null 2>&1; then
+    pwsh scripts/verify-coverage.ps1
+    RC=$?
+elif command -v powershell >/dev/null 2>&1; then
+    powershell -ExecutionPolicy Bypass -File scripts/verify-coverage.ps1
+    RC=$?
+else
+    echo "[pre-commit] No PowerShell available; skipping coverage gate"
+    RC=0
+fi
+
+if [ $RC -ne 0 ]; then
+    echo "[pre-commit] Coverage gate failed. Commit blocked."
+    exit 1
+fi
+
+echo "[pre-commit] Coverage gate passed"
+exit 0
