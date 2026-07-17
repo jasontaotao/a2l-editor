@@ -14,6 +14,13 @@ public sealed class A2lDocumentWriter
 
     public void WriteToString(A2lDocument doc, TextWriter sw)
     {
+        // v0.8 NEW: byte-for-byte emit when RawText is preserved (1:1 read→save lock)
+        if (!string.IsNullOrEmpty(doc.RawText))
+        {
+            sw.Write(doc.RawText);
+            return;
+        }
+
         sw.WriteLine($"ASAP2_VERSION 1 {MinorVersion(doc.Version)}");
 
         sw.Write("/begin PROJECT ");
