@@ -36,7 +36,7 @@ The following functionality is implemented and covered by the current test suite
 
 ## Deferred to v0.6+
 
-The following are intentionally not claimed as v0.5 functionality:
+The following are intentionally not claimed as v0.6 functionality:
 
 - Drag-and-drop file open
 - Full menu (Edit / View / Tools / Help)
