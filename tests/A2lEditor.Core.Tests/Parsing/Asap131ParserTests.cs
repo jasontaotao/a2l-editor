@@ -344,4 +344,19 @@ public class Asap131ParserTests
         result.Value!.ModCommon.Should().NotBeNull();
         result.Value!.ModCommon!.AlignmentByteOrder.Should().Be(A2lByteOrder.MSB_FIRST);
     }
+
+    [Fact]
+    public void Tokenize_StringWithNewline_PreservesNewline()
+    {
+        // v0.5 multi-line verify: Asap131Lexer.ReadString L130 already supports
+        // multi-line string literals via Advance(_text[_pos] == '\n'). This test
+        // locks the invariant so a future Lexer refactor doesn't accidentally
+        // break multi-line string support.
+        const string text = "ASAP2_VERSION 1 61\n"
+            + "/begin PROJECT P \"line1\nline2\nline3\" /end PROJECT\n";
+        var result = Asap131Parser.ParseText(text);
+        result.HasFatalErrors.Should().BeFalse(
+            $"no fatal errors expected; actual: {string.Join("; ", result.Errors.Select(e => $"L{e.Line}:{e.Message}"))}");
+        result.Value!.ProjectComment.Should().Be("line1\nline2\nline3");
+    }
 }
