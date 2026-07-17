@@ -10,4 +10,6 @@ public sealed record RecordLayoutEntry(
     int Position,
     string DataType,
     string IndexMode,
-    string AddressingMode);
+    string AddressingMode,
+    ulong? IndexIncr,
+    ulong? IndexDecr);

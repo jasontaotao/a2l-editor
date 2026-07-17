@@ -5,4 +5,5 @@ public sealed record A2lModCommon(
     A2lByteOrder ByteOrder,
     ulong? DataSize,
     A2lByteOrder? AlignmentByteOrder,
+    ulong? AlignmentOffset,
     LineRange SourceLines);

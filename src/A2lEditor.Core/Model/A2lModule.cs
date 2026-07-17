@@ -13,4 +13,5 @@ public sealed record A2lModule(
     IReadOnlyList<A2lAxisDescr> AxisDescr,
     IReadOnlyList<A2lUserRights> UserRights,
     IReadOnlyList<A2lVersionInfo> VersionInfo,
+    IReadOnlyList<A2lAxisPtsX> AxisPtsX,
     LineRange SourceLines);

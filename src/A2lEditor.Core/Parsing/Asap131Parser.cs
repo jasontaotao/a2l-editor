@@ -146,6 +146,7 @@ public sealed class Asap131Parser
         var axisDescr = new List<A2lAxisDescr>();
         var userRights = new List<A2lUserRights>();
         var versionInfo = new List<A2lVersionInfo>();
+        var axisPtsX = new List<A2lAxisPtsX>();  // v0.6: AXIS_PTS_X list (parsing TBD)
         string? moduleModPar = null;  // v0.3: track MOD_PAR comment
 
         while (!(Current.Kind == TokenKind.Keyword && Current.Text == "/end"))
@@ -220,7 +221,7 @@ public sealed class Asap131Parser
         range = new LineRange(startLine, endLine);
         return new A2lModule(name, comment, measurements, characteristics, axisPts,
             compuMethods, recordLayouts, groups, moduleModPar,
-            axisDescr, userRights, versionInfo, range);
+            axisDescr, userRights, versionInfo, axisPtsX, range);
     }
 
     // v0.3 PATCH: stash for MOD_COMMON found inside a MODULE block (v1.61 layout).
@@ -267,7 +268,7 @@ public sealed class Asap131Parser
                                    ErrorSeverity.Warning));
         }
         TryConsumeKeyword("/end");
-        return new A2lModCommon(mcComment, byteOrder, dataSize, alignmentByteOrder,
+        return new A2lModCommon(mcComment, byteOrder, dataSize, alignmentByteOrder, null,
             new LineRange(mcStartLine, Current.Line));
     }
 
@@ -390,7 +391,7 @@ public sealed class Asap131Parser
                 if (Current.Kind == TokenKind.Identifier) { dt = Consume().Text; }
                 if (Current.Kind == TokenKind.Identifier) { idx = Consume().Text; }
                 if (Current.Kind == TokenKind.Identifier) { addr = Consume().Text; }
-                entries.Add(new RecordLayoutEntry(kw, pos, dt, idx, addr));
+                entries.Add(new RecordLayoutEntry(kw, pos, dt, idx, addr, null, null));
             }
             else Consume();
         }

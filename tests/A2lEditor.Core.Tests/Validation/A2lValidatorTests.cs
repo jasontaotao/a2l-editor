@@ -24,6 +24,7 @@ public class A2lValidatorTests
             Array.Empty<A2lAxisDescr>(),
             Array.Empty<A2lUserRights>(),
             Array.Empty<A2lVersionInfo>(),
+            Array.Empty<A2lAxisPtsX>(),
             new LineRange(1, 2));
         var doc = new A2lDocument(A2lVersion.V1_31, "P", "", "", null, new[] { m },
             "", 1);
@@ -58,6 +59,7 @@ public class A2lValidatorTests
             Array.Empty<A2lAxisDescr>(),
             Array.Empty<A2lUserRights>(),
             Array.Empty<A2lVersionInfo>(),
+            Array.Empty<A2lAxisPtsX>(),
             new LineRange(1, 4));
         var doc = new A2lDocument(A2lVersion.V1_31, "P", "", "", null, new[] { m },
             "", 1);
@@ -84,6 +86,7 @@ public class A2lValidatorTests
             Array.Empty<A2lAxisDescr>(),
             Array.Empty<A2lUserRights>(),
             Array.Empty<A2lVersionInfo>(),
+            Array.Empty<A2lAxisPtsX>(),
             new LineRange(1, 5));
         var doc = new A2lDocument(A2lVersion.V1_31, "P", "", "", null, new[] { m },
             "", 1);
@@ -98,7 +101,7 @@ public class A2lValidatorTests
     {
         var doc = new A2lDocument(
             A2lVersion.V1_31, "P", "", "",
-            new A2lModCommon("", A2lByteOrder.MSB_FIRST, null, null, new LineRange(0, 0)),
+            new A2lModCommon("", A2lByteOrder.MSB_FIRST, null, null, null, new LineRange(0, 0)),
             new List<A2lModule>(), "", 1);
         var errors = new A2lValidator().Validate(doc);
         errors.Should().Contain(e => e.Severity == ErrorSeverity.Warning &&
