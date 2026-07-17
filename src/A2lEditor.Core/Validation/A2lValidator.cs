@@ -45,6 +45,14 @@ public sealed class A2lValidator
                     $"Duplicate CHARACTERISTIC name: {ch.Name}", ErrorSeverity.Error));
         }
 
+        // v0.6: VERSION duplicate detection
+        if (m.VersionInfo.Count > 1)
+        {
+            errors.Add(new ParseError(m.SourceLines.Start, 1,
+                $"Duplicate VERSION block in module {m.Name} ({m.VersionInfo.Count} versions found; ASAP2 allows 1)",
+                ErrorSeverity.Error));
+        }
+
         var compuMethods = new HashSet<string>(m.CompuMethods.Select(c => c.Name),
             StringComparer.Ordinal);
         foreach (var meas in m.Measurements)

@@ -43,6 +43,48 @@ public class A2lValidatorTests
     }
 
     [Fact]
+    public void Validate_DuplicateVersionBlock_EmitsError()
+    {
+        var module = new A2lModule(
+            Name: "M",
+            Comment: "",
+            Measurements: Array.Empty<A2lMeasurement>(),
+            Characteristics: Array.Empty<A2lCharacteristic>(),
+            AxisPts: Array.Empty<A2lAxisPts>(),
+            CompuMethods: Array.Empty<A2lCompuMethod>(),
+            RecordLayouts: Array.Empty<A2lRecordLayout>(),
+            Groups: Array.Empty<A2lGroup>(),
+            ModPar: null,
+            AxisDescr: Array.Empty<A2lAxisDescr>(),
+            UserRights: Array.Empty<A2lUserRights>(),
+            VersionInfo: new List<A2lVersionInfo>
+            {
+                new("1.0", new DateTime(2024, 1, 1), "ACME", "first", new LineRange(1, 1)),
+                new("1.1", new DateTime(2024, 6, 1), "ACME", "second", new LineRange(2, 2)),
+            },
+            AxisPtsX: Array.Empty<A2lAxisPtsX>(),
+            SourceLines: new LineRange(1, 10));
+
+        var doc = new A2lDocument(
+            Version: A2lVersion.V1_31,
+            ProjectName: "P",
+            ProjectComment: "",
+            HeaderComment: "",
+            ModCommon: null,
+            Modules: new List<A2lModule> { module },
+            RawText: "",
+            SourceLineCount: 10);
+
+        var validator = new A2lValidator();
+        var errors = validator.Validate(doc);
+
+        errors.Should().Contain(e =>
+            e.Severity == ErrorSeverity.Error &&
+            e.Message.Contains("Duplicate VERSION block") &&
+            e.Message.Contains("M"));
+    }
+
+    [Fact]
     public void Validate_DuplicateCharacteristicNames_ReturnsError()
     {
         var m = new A2lModule("M", "",
