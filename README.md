@@ -36,7 +36,7 @@ The following functionality is implemented and covered by the current test suite
 
 126 passing + 0 skip across 3 test projects:
 
-- `A2lEditor.Core.Tests` — 97 (v0.7's 87 + 10 new in v0.8: 7 `A2lDocument.LoadFromFile` BOM-detection cases + 3 `CoberturaReport` parser cases)
+- `A2lEditor.Core.Tests` — 97 (v0.7's 87 + 10 new in v0.8: 3 `A2lDocument.LoadFromFile` BOM-detection cases + 5 `CoberturaReport` parser cases + 2 `ByteForByteRoundTrip` cases for BmsModel 16693-line lock)
 - `A2lEditor.App.Tests` — 23 (unchanged from v0.7; 14 baseline from v0.2 + 9 new in v0.7: drag-and-drop 4 + menu 3 + debounce 2; note implementer deviations — drag-drop landed 4 tests not 3, no `[StaFact]` pattern used, `OpenRecent` stays synchronous not async). App tests run with `parallelizeTestCollections: false` (via `xunit.runner.json`) to avoid a WPF `PackagePart` resource-loader race.
 - `A2lEditor.IntegrationTests` — 6 (CLI validate exit codes 0/1/2 + BmsModel 0-warnings acceptance + BmsModel full round-trip semantic equality + BmsModel multi-line lock + BmsModel byte-for-byte round-trip equality)
 
