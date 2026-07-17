@@ -19,14 +19,14 @@ public sealed class A2lDocumentWriter
         sw.Write("/begin PROJECT ");
         sw.Write(doc.ProjectName);
         sw.Write(' ');
-        WriteEscapedString(sw, doc.ProjectComment);
+        StringLiteralEscaper.EmitMultiLine(sw, doc.ProjectComment);
         sw.WriteLine();
 
         // v0.4: HEADER block (per project, if present)
         if (!string.IsNullOrEmpty(doc.HeaderComment))
         {
             sw.Write(" /begin HEADER ");
-            WriteEscapedString(sw, doc.HeaderComment);
+            StringLiteralEscaper.EmitMultiLine(sw, doc.HeaderComment);
             sw.WriteLine(" /end HEADER");
         }
 
@@ -34,7 +34,7 @@ public sealed class A2lDocumentWriter
         if (doc.ModCommon is not null)
         {
             sw.Write("/begin MOD_COMMON ");
-            WriteEscapedString(sw, doc.ModCommon.Comment);
+            StringLiteralEscaper.EmitMultiLine(sw, doc.ModCommon.Comment);
             sw.Write(' ');
             sw.Write("BYTE_ORDER ");
             sw.WriteLine(doc.ModCommon.ByteOrder == A2lByteOrder.MSB_LAST ? "MSB_LAST" : "MSB_FIRST");
@@ -84,14 +84,14 @@ public sealed class A2lDocumentWriter
         sw.Write("/begin MODULE ");
         sw.Write(module.Name);
         sw.Write(' ');
-        WriteEscapedString(sw, module.Comment);
+        StringLiteralEscaper.EmitMultiLine(sw, module.Comment);
         sw.WriteLine();
 
         // v0.3: MOD_PAR block (per module, if present)
         if (module.ModPar is not null)
         {
             sw.Write("/begin MOD_PAR ");
-            WriteEscapedString(sw, module.ModPar);
+            StringLiteralEscaper.EmitMultiLine(sw, module.ModPar);
             sw.WriteLine(" /end MOD_PAR");
         }
 

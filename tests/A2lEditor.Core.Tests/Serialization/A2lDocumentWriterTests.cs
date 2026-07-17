@@ -510,6 +510,57 @@ public class A2lDocumentWriterTests
         output.Should().Contain("MSB_FIRST");
     }
 
+    // v0.6 Task 5: multi-line EmitMultiLine for PROJECT/HEADER/MOD_COMMON/MODULE/MOD_PAR comments.
+
+    [Fact]
+    public void Write_MultiLineComment_PreservesNewlineInOutput()
+    {
+        var modCommon = new A2lModCommon(
+            Comment: "line1\nline2",
+            ByteOrder: A2lByteOrder.MSB_LAST,
+            DataSize: null,
+            AlignmentByteOrder: null,
+            AlignmentOffset: null,
+            SourceLines: new LineRange(1, 1));
+
+        var doc = new A2lDocument(
+            Version: A2lVersion.V1_31,
+            ProjectName: "P",
+            ProjectComment: "",
+            HeaderComment: "",
+            ModCommon: modCommon,
+            Modules: new List<A2lModule>(),
+            RawText: "",
+            SourceLineCount: 1);
+        var sw = new StringWriter();
+        new A2lDocumentWriter().WriteToString(doc, sw);
+
+        var output = sw.ToString();
+        output.Should().Contain("\"line1\nline2\"");  // real newline, not \\n
+        output.Should().NotContain("line1\\nline2");
+    }
+
+    [Fact]
+    public void Write_ProjectCommentWithNewline_EmitsMultiLine()
+    {
+        var doc = new A2lDocument(
+            Version: A2lVersion.V1_31,
+            ProjectName: "P",
+            ProjectComment: "first line\nsecond line",
+            HeaderComment: "",
+            ModCommon: null,
+            Modules: new List<A2lModule>(),
+            RawText: "",
+            SourceLineCount: 1);
+
+        var sw = new StringWriter();
+        new A2lDocumentWriter().WriteToString(doc, sw);
+
+        var output = sw.ToString();
+        output.Should().Contain("\"first line\nsecond line\"");
+        output.Should().NotContain("first line\\nsecond line");
+    }
+
     // v0.6 Task 4: WriteAxisPtsX + RecordLayoutEntry INDEX_INCR/INDEX_DECR + MOD_COMMON ALIGNMENT_OFFSET.
 
     [Fact]

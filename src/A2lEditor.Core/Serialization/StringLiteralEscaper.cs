@@ -27,4 +27,27 @@ public static class StringLiteralEscaper
         }
         return sb.ToString();
     }
+
+    /// Emit a multi-line string literal directly to a TextWriter, preserving real
+    /// newlines (\n) instead of escaping them (sibling of Escape). Used for
+    /// comment fields where multi-line emit is the v0.6 spec choice. Quotes and
+    /// backslashes are still escaped; CR is skipped to handle Windows line endings.
+    public static void EmitMultiLine(TextWriter sw, string? s)
+    {
+        if (string.IsNullOrEmpty(s)) return;
+        sw.Write('"');
+        foreach (var ch in s)
+        {
+            switch (ch)
+            {
+                case '"':  sw.Write("\\\""); break;
+                case '\\': sw.Write("\\\\"); break;
+                case '\n': sw.Write('\n'); break;     // 真实换行 (vs Escape 写 \\n)
+                case '\r': break;                     // skip CR (Windows line endings)
+                case '\t': sw.Write("\\t"); break;
+                default:  sw.Write(ch); break;
+            }
+        }
+        sw.Write('"');
+    }
 }
