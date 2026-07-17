@@ -10,4 +10,7 @@ public sealed record A2lModule(
     IReadOnlyList<A2lRecordLayout> RecordLayouts,
     IReadOnlyList<A2lGroup> Groups,
     string? ModPar,
+    IReadOnlyList<A2lAxisDescr> AxisDescr,
+    IReadOnlyList<A2lUserRights> UserRights,
+    IReadOnlyList<A2lVersionInfo> VersionInfo,
     LineRange SourceLines);

@@ -207,7 +207,8 @@ public sealed class Asap131Parser
         int endLine = Current.Line;
         range = new LineRange(startLine, endLine);
         return new A2lModule(name, comment, measurements, characteristics, axisPts,
-            compuMethods, recordLayouts, groups, moduleModPar, range);
+            compuMethods, recordLayouts, groups, moduleModPar,
+            new List<A2lAxisDescr>(), new List<A2lUserRights>(), new List<A2lVersionInfo>(), range);
     }
 
     // v0.3 PATCH: stash for MOD_COMMON found inside a MODULE block (v1.61 layout).
@@ -234,7 +235,7 @@ public sealed class Asap131Parser
                                    ErrorSeverity.Warning));
         }
         TryConsumeKeyword("/end");
-        return new A2lModCommon(mcComment, byteOrder,
+        return new A2lModCommon(mcComment, byteOrder, null, null,
             new LineRange(mcStartLine, Current.Line));
     }
 

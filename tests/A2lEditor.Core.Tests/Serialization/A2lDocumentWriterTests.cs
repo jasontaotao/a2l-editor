@@ -55,6 +55,9 @@ public class A2lDocumentWriterTests
                 RecordLayouts: new List<A2lRecordLayout>(),
                 Groups: new List<A2lGroup>(),
                 ModPar: null,
+                AxisDescr: new List<A2lAxisDescr>(),
+                UserRights: new List<A2lUserRights>(),
+                VersionInfo: new List<A2lVersionInfo>(),
                 SourceLines: new LineRange(0, 0))
         },
         RawText: "",
@@ -244,7 +247,7 @@ public class A2lDocumentWriterTests
     {
         var doc = new A2lDocument(
             A2lVersion.V1_31, "P", "", "",
-            new A2lModCommon("c", A2lByteOrder.MSB_LAST, new LineRange(0, 0)),
+            new A2lModCommon("c", A2lByteOrder.MSB_LAST, null, null, new LineRange(0, 0)),
             new List<A2lModule>(), "", 1);
         using var sw = new StringWriter();
         new A2lDocumentWriter().WriteToString(doc, sw);
@@ -263,6 +266,7 @@ public class A2lDocumentWriterTests
             new List<A2lAxisPts>(), new List<A2lCompuMethod>(),
             new List<A2lRecordLayout>(), new List<A2lGroup>(),
             "my mod par comment",
+            new List<A2lAxisDescr>(), new List<A2lUserRights>(), new List<A2lVersionInfo>(),
             new LineRange(0, 0));
         var doc = new A2lDocument(
             A2lVersion.V1_31, "P", "", "",
@@ -286,7 +290,7 @@ public class A2lDocumentWriterTests
             A2lVersion.V1_31, "P", "", "", null,
             new List<A2lModule> { new A2lModule("M", "", new List<A2lMeasurement> { meas },
                 new List<A2lCharacteristic>(), new List<A2lAxisPts>(), new List<A2lCompuMethod>(),
-                new List<A2lRecordLayout>(), new List<A2lGroup>(), null, new LineRange(0, 0)) },
+                new List<A2lRecordLayout>(), new List<A2lGroup>(), null, new List<A2lAxisDescr>(), new List<A2lUserRights>(), new List<A2lVersionInfo>(), new LineRange(0, 0)) },
             "", 1);
         using var sw = new StringWriter();
         new A2lDocumentWriter().WriteToString(doc, sw);
@@ -310,7 +314,7 @@ public class A2lDocumentWriterTests
             A2lVersion.V1_31, "P", "", "", null,
             new List<A2lModule> { new A2lModule("M", "", new List<A2lMeasurement>(),
                 new List<A2lCharacteristic> { ch }, new List<A2lAxisPts>(), new List<A2lCompuMethod>(),
-                new List<A2lRecordLayout>(), new List<A2lGroup>(), null, new LineRange(0, 0)) },
+                new List<A2lRecordLayout>(), new List<A2lGroup>(), null, new List<A2lAxisDescr>(), new List<A2lUserRights>(), new List<A2lVersionInfo>(), new LineRange(0, 0)) },
             "", 1);
         using var sw = new StringWriter();
         new A2lDocumentWriter().WriteToString(doc, sw);
@@ -335,7 +339,7 @@ public class A2lDocumentWriterTests
             A2lVersion.V1_31, "P", "", "", null,
             new List<A2lModule> { new A2lModule("M", "", new List<A2lMeasurement>(),
                 new List<A2lCharacteristic>(), new List<A2lAxisPts> { ap }, new List<A2lCompuMethod>(),
-                new List<A2lRecordLayout>(), new List<A2lGroup>(), null, new LineRange(0, 0)) },
+                new List<A2lRecordLayout>(), new List<A2lGroup>(), null, new List<A2lAxisDescr>(), new List<A2lUserRights>(), new List<A2lVersionInfo>(), new LineRange(0, 0)) },
             "", 1);
         using var sw = new StringWriter();
         new A2lDocumentWriter().WriteToString(doc, sw);
@@ -358,7 +362,7 @@ public class A2lDocumentWriterTests
             A2lVersion.V1_31, "P", "", "", null,
             new List<A2lModule> { new A2lModule("M", "", new List<A2lMeasurement>(),
                 new List<A2lCharacteristic>(), new List<A2lAxisPts>(), new List<A2lCompuMethod> { cm },
-                new List<A2lRecordLayout>(), new List<A2lGroup>(), null, new LineRange(0, 0)) },
+                new List<A2lRecordLayout>(), new List<A2lGroup>(), null, new List<A2lAxisDescr>(), new List<A2lUserRights>(), new List<A2lVersionInfo>(), new LineRange(0, 0)) },
             "", 1);
         using var sw = new StringWriter();
         new A2lDocumentWriter().WriteToString(doc, sw);
@@ -381,7 +385,7 @@ public class A2lDocumentWriterTests
             A2lVersion.V1_31, "P", "", "", null,
             new List<A2lModule> { new A2lModule("M", "", new List<A2lMeasurement>(),
                 new List<A2lCharacteristic>(), new List<A2lAxisPts>(), new List<A2lCompuMethod> { cm },
-                new List<A2lRecordLayout>(), new List<A2lGroup>(), null, new LineRange(0, 0)) },
+                new List<A2lRecordLayout>(), new List<A2lGroup>(), null, new List<A2lAxisDescr>(), new List<A2lUserRights>(), new List<A2lVersionInfo>(), new LineRange(0, 0)) },
             "", 1);
         using var sw = new StringWriter();
         new A2lDocumentWriter().WriteToString(doc, sw);
@@ -408,7 +412,7 @@ public class A2lDocumentWriterTests
             A2lVersion.V1_31, "P", "", "", null,
             new List<A2lModule> { new A2lModule("M", "", new List<A2lMeasurement>(),
                 new List<A2lCharacteristic>(), new List<A2lAxisPts>(), new List<A2lCompuMethod>(),
-                new List<A2lRecordLayout> { rl }, new List<A2lGroup>(), null, new LineRange(0, 0)) },
+                new List<A2lRecordLayout> { rl }, new List<A2lGroup>(), null, new List<A2lAxisDescr>(), new List<A2lUserRights>(), new List<A2lVersionInfo>(), new LineRange(0, 0)) },
             "", 1);
         using var sw = new StringWriter();
         new A2lDocumentWriter().WriteToString(doc, sw);
@@ -432,7 +436,7 @@ public class A2lDocumentWriterTests
             A2lVersion.V1_31, "P", "", "", null,
             new List<A2lModule> { new A2lModule("M", "", new List<A2lMeasurement>(),
                 new List<A2lCharacteristic>(), new List<A2lAxisPts>(), new List<A2lCompuMethod>(),
-                new List<A2lRecordLayout>(), new List<A2lGroup> { g }, null, new LineRange(0, 0)) },
+                new List<A2lRecordLayout>(), new List<A2lGroup> { g }, null, new List<A2lAxisDescr>(), new List<A2lUserRights>(), new List<A2lVersionInfo>(), new LineRange(0, 0)) },
             "", 1);
         using var sw = new StringWriter();
         new A2lDocumentWriter().WriteToString(doc, sw);

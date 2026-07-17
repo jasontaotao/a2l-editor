@@ -21,6 +21,9 @@ public class A2lValidatorTests
             Array.Empty<A2lRecordLayout>(),
             Array.Empty<A2lGroup>(),
             null,
+            Array.Empty<A2lAxisDescr>(),
+            Array.Empty<A2lUserRights>(),
+            Array.Empty<A2lVersionInfo>(),
             new LineRange(1, 2));
         var doc = new A2lDocument(A2lVersion.V1_31, "P", "", "", null, new[] { m },
             "", 1);
@@ -52,6 +55,9 @@ public class A2lValidatorTests
             Array.Empty<A2lRecordLayout>(),
             Array.Empty<A2lGroup>(),
             null,
+            Array.Empty<A2lAxisDescr>(),
+            Array.Empty<A2lUserRights>(),
+            Array.Empty<A2lVersionInfo>(),
             new LineRange(1, 4));
         var doc = new A2lDocument(A2lVersion.V1_31, "P", "", "", null, new[] { m },
             "", 1);
@@ -75,6 +81,9 @@ public class A2lValidatorTests
             Array.Empty<A2lRecordLayout>(),
             Array.Empty<A2lGroup>(),
             null,
+            Array.Empty<A2lAxisDescr>(),
+            Array.Empty<A2lUserRights>(),
+            Array.Empty<A2lVersionInfo>(),
             new LineRange(1, 5));
         var doc = new A2lDocument(A2lVersion.V1_31, "P", "", "", null, new[] { m },
             "", 1);
