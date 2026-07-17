@@ -582,3 +582,44 @@ Task 5: complete (commits e3df0b2..bef6a49, review clean; byte-for-byte 16693 li
 ### Next
 
 Final whole-branch review (opus) per plan "Final Review" section, then user decides push + GH release.
+
+---
+
+# a2l-editor v0.9 Task Status
+
+## 🟢 v0.9 STARTED — "MAP/ELF Alignment" (closes 6-version zombie deferred)
+
+**Plan**: `docs/superpowers/plans/2026-07-17-a2l-editor-v0-9-map-elf.md`
+**Spec**: `docs/superpowers/specs/2026-07-17-a2l-editor-v0-9-map-elf.md` (spec-audit verified + 13 inline fixes applied)
+**Branch**: `main`
+**Base**: v0.8 = `3ba94a3` (PUSHED to origin 2026-07-17)
+**Tag**: v0.9 (not yet tagged)
+**Started**: 2026-07-17
+
+### Pre-flight Plan Review (2026-07-17)
+
+**Conflicts / contradictions**: NONE found.
+- 14 Global Constraints cross-checked against all 6 tasks: ✅ aligned.
+- Type consistency: `MapSymbol(Name, Address)` used 92 times consistently; `Size` field omitted 3× with explicit reminder.
+- Pre-existing v0.8 baseline cross-check: 0 Asap131Parser changes + 0 v0.8-tooling changes + 0 legacy project changes — all 3 constraints have explicit verification commands in Task 6.
+- Task 3 Step 3 arithmetic comment ("126 + 11 = 137; allow ±1") is Core-only count; Task 6 step 1 expects whole-solution 141 (Core 108 + App 24 + Integration 6 + Cli.Tests 3 = 141). Both consistent.
+- Task 5 IDialogService mismatch caught in self-review; fixed by inlining `Microsoft.Win32.OpenFileDialog` inside ApplyMapCommand.
+
+### Task Dispatch Order
+
+| # | Subject | Implementer model | Reviewer model |
+|---|---------|-------------------|----------------|
+| 1 | A2lEditor.Reuse + adapter + 4 fixtures | sonnet (multi-file mechanical + linked-source build risk) | sonnet |
+| 2 | IMapAlignmentService + 5 tests | sonnet (multi-file + DI integration) | sonnet |
+| 3 | MapCoverageReport tests | haiku (single trivial record test) | haiku |
+| 4 | CLI Map commands + Cli.Tests project | sonnet (multi-file + sln modify + version bump) | sonnet |
+| 5 | WPF Apply MAP menu + test | sonnet (UI integration + IDialogService self-catch) | sonnet |
+| 6 | Final verify + README + tag v0.9 | controller (no subagent — takeover pattern) | N/A (final whole-branch review) |
+
+### PKM Capture
+
+**NOT dispatched yet.** Per user global `~/.claude/CLAUDE.md` throttling rule. Anti-PKM HARD CONSTRAINT will be enforced in every subagent dispatch. Will fire only at Tier-3 ship-completion (post-final-review GH release announce) OR lesson-promotion PATCH.
+
+### Next
+
+Dispatch Task 1 implementer subagent.
