@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using A2lEditor.App.Controls;
 using A2lEditor.App.Highlighting;
@@ -154,4 +155,49 @@ public partial class MainWindow : Window
 
     private void SetDropTargetVisualFeedback(bool active)
         => DropTargetBorder.BorderBrush = active ? Brushes.DodgerBlue : Brushes.Transparent;
+
+    // --- v0.7 menu command handlers (stubs; real impl in Task 3) ---------------
+    // Empty stubs keep the XAML CommandBindings referenced in Task 2 from
+    // raising XLS0113 missing-handler errors. Task 3 replaces these bodies
+    // with the real implementation.
+
+    private void OnNew(object sender, ExecutedRoutedEventArgs e) { }
+
+    private void OnOpen(object sender, ExecutedRoutedEventArgs e) { }
+
+    private void OnSave(object sender, ExecutedRoutedEventArgs e) { }
+
+    private void OnSave_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        => e.CanExecute = false;
+
+    private void OnSaveAs(object sender, ExecutedRoutedEventArgs e) { }
+
+    private void OnSaveAs_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        => e.CanExecute = false;
+
+    private void OnExit(object sender, ExecutedRoutedEventArgs e) { }
+
+    private void OnUndo(object sender, ExecutedRoutedEventArgs e) { }
+
+    private void OnRedo(object sender, ExecutedRoutedEventArgs e) { }
+
+    private void OnCut(object sender, ExecutedRoutedEventArgs e) { }
+
+    private void OnCopy(object sender, ExecutedRoutedEventArgs e) { }
+
+    private void OnPaste(object sender, ExecutedRoutedEventArgs e) { }
+
+    private void OnFind(object sender, ExecutedRoutedEventArgs e) { }
+
+    private void OnZoomIn(object sender, ExecutedRoutedEventArgs e) { }
+
+    private void OnZoomOut(object sender, ExecutedRoutedEventArgs e) { }
+
+    private void OnResetZoom(object sender, ExecutedRoutedEventArgs e) { }
+
+    private void OnAbout(object sender, ExecutedRoutedEventArgs e) { }
+
+    private void OnValidate(object sender, ExecutedRoutedEventArgs e) { }
+
+    private void OnFormat(object sender, ExecutedRoutedEventArgs e) { }
 }
