@@ -48,6 +48,11 @@ public sealed class A2lDocumentWriter
                 sw.Write(" ALIGNMENT_BYTE_ORDER ");
                 sw.WriteLine(doc.ModCommon.AlignmentByteOrder.Value == A2lByteOrder.MSB_LAST ? "MSB_LAST" : "MSB_FIRST");
             }
+            if (doc.ModCommon.AlignmentOffset.HasValue)
+            {
+                sw.Write(" ALIGNMENT_OFFSET ");
+                sw.WriteLine(doc.ModCommon.AlignmentOffset.Value);
+            }
             sw.WriteLine("/end MOD_COMMON");
         }
 
@@ -94,6 +99,7 @@ public sealed class A2lDocumentWriter
         foreach (var meas in module.Measurements) WriteMeasurement(sw, meas);
         foreach (var ch in module.Characteristics) WriteCharacteristic(sw, ch);
         foreach (var ap in module.AxisPts) WriteAxisPts(sw, ap);
+        foreach (var ax in module.AxisPtsX) WriteAxisPtsX(sw, ax);
         foreach (var cm in module.CompuMethods) WriteCompuMethod(sw, cm);
         foreach (var rl in module.RecordLayouts) WriteRecordLayout(sw, rl);
         foreach (var gr in module.Groups) WriteGroup(sw, gr);
@@ -173,6 +179,30 @@ public sealed class A2lDocumentWriter
         sw.WriteLine("/end AXIS_PTS");
     }
 
+    private static void WriteAxisPtsX(TextWriter sw, A2lAxisPtsX a)
+    {
+        sw.Write("/begin AXIS_PTS_X ");
+        sw.Write(a.Name);
+        sw.Write(' ');
+        WriteEscapedString(sw, a.LongIdentifier);
+        sw.Write(' ');
+        if (!string.IsNullOrEmpty(a.RecordLayout)) sw.Write(a.RecordLayout);
+        sw.Write(' ');
+        if (a.EcuAddress != 0) sw.Write(a.EcuAddress.ToString("X"));
+        sw.Write(' ');
+        if (!string.IsNullOrEmpty(a.InputQuantity)) sw.Write(a.InputQuantity);
+        sw.Write(' ');
+        if (!string.IsNullOrEmpty(a.CompuMethod)) sw.Write(a.CompuMethod);
+        sw.Write(' ');
+        sw.Write(a.MaxAxisPoints);
+        sw.Write(' ');
+        sw.Write(a.LowerLimit);
+        sw.Write(' ');
+        sw.Write(a.UpperLimit);
+        sw.WriteLine();
+        sw.WriteLine("/end AXIS_PTS_X");
+    }
+
     private static void WriteCompuMethod(TextWriter sw, A2lCompuMethod c)
     {
         sw.Write("/begin COMPU_METHOD ");
@@ -219,6 +249,16 @@ public sealed class A2lDocumentWriter
             if (!string.IsNullOrEmpty(entry.IndexMode)) sw.Write(entry.IndexMode);
             sw.Write(' ');
             if (!string.IsNullOrEmpty(entry.AddressingMode)) sw.Write(entry.AddressingMode);
+            if (entry.IndexIncr.HasValue)
+            {
+                sw.Write(" INDEX_INCR ");
+                sw.Write(entry.IndexIncr.Value);
+            }
+            if (entry.IndexDecr.HasValue)
+            {
+                sw.Write(" INDEX_DECR ");
+                sw.Write(entry.IndexDecr.Value);
+            }
             sw.WriteLine();
         }
         sw.WriteLine("/end RECORD_LAYOUT");

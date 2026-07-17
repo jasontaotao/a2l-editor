@@ -510,6 +510,115 @@ public class A2lDocumentWriterTests
         output.Should().Contain("MSB_FIRST");
     }
 
+    // v0.6 Task 4: WriteAxisPtsX + RecordLayoutEntry INDEX_INCR/INDEX_DECR + MOD_COMMON ALIGNMENT_OFFSET.
+
+    [Fact]
+    public void Write_AxisPtsX_EmitsAllFields()
+    {
+        var ax = new A2lAxisPtsX(
+            Name: "X_AXIS",
+            LongIdentifier: "X axis points",
+            RecordLayout: "RL_Axis_X",
+            EcuAddress: 0x1000UL,
+            InputQuantity: "Time",
+            CompuMethod: "CM_Time",
+            MaxAxisPoints: 10,
+            LowerLimit: "0.0",
+            UpperLimit: "100.0",
+            SourceLines: new LineRange(1, 2));
+
+        var module = new A2lModule(
+            Name: "M", Comment: "",
+            Measurements: Array.Empty<A2lMeasurement>(),
+            Characteristics: Array.Empty<A2lCharacteristic>(),
+            AxisPts: Array.Empty<A2lAxisPts>(),
+            CompuMethods: Array.Empty<A2lCompuMethod>(),
+            RecordLayouts: Array.Empty<A2lRecordLayout>(),
+            Groups: Array.Empty<A2lGroup>(),
+            ModPar: null,
+            AxisDescr: Array.Empty<A2lAxisDescr>(),
+            UserRights: Array.Empty<A2lUserRights>(),
+            VersionInfo: Array.Empty<A2lVersionInfo>(),
+            AxisPtsX: new List<A2lAxisPtsX> { ax },
+            SourceLines: new LineRange(1, 5));
+
+        var doc = new A2lDocument(
+            Version: A2lVersion.V1_31, ProjectName: "P", ProjectComment: "",
+            HeaderComment: "", ModCommon: null,
+            Modules: new List<A2lModule> { module }, RawText: "", SourceLineCount: 1);
+        var sw = new StringWriter();
+        new A2lDocumentWriter().WriteToString(doc, sw);
+
+        sw.ToString().Should().Contain("/begin AXIS_PTS_X X_AXIS");
+        sw.ToString().Should().Contain("RL_Axis_X");
+        sw.ToString().Should().Contain("1000");  // hex ECU address
+        sw.ToString().Should().Contain("/end AXIS_PTS_X");
+    }
+
+    [Fact]
+    public void Write_RecordLayoutWithIndexIncr_EmitsIndexIncr()
+    {
+        var entry = new RecordLayoutEntry(
+            Keyword: "FNC_VALUES",
+            Position: 1,
+            DataType: "UBYTE",
+            IndexMode: "",
+            AddressingMode: "",
+            IndexIncr: 5UL,
+            IndexDecr: null);
+
+        var rl = new A2lRecordLayout(
+            Name: "RL1",
+            Entries: new List<RecordLayoutEntry> { entry },
+            SourceLines: new LineRange(1, 2));
+
+        var module = new A2lModule(
+            Name: "M", Comment: "",
+            Measurements: Array.Empty<A2lMeasurement>(),
+            Characteristics: Array.Empty<A2lCharacteristic>(),
+            AxisPts: Array.Empty<A2lAxisPts>(),
+            CompuMethods: Array.Empty<A2lCompuMethod>(),
+            RecordLayouts: new List<A2lRecordLayout> { rl },
+            Groups: Array.Empty<A2lGroup>(),
+            ModPar: null,
+            AxisDescr: Array.Empty<A2lAxisDescr>(),
+            UserRights: Array.Empty<A2lUserRights>(),
+            VersionInfo: Array.Empty<A2lVersionInfo>(),
+            AxisPtsX: Array.Empty<A2lAxisPtsX>(),
+            SourceLines: new LineRange(1, 5));
+
+        var doc = new A2lDocument(
+            Version: A2lVersion.V1_31, ProjectName: "P", ProjectComment: "",
+            HeaderComment: "", ModCommon: null,
+            Modules: new List<A2lModule> { module }, RawText: "", SourceLineCount: 1);
+        var sw = new StringWriter();
+        new A2lDocumentWriter().WriteToString(doc, sw);
+
+        sw.ToString().Should().Contain("INDEX_INCR 5");
+        sw.ToString().Should().NotContain("INDEX_DECR");
+    }
+
+    [Fact]
+    public void Write_ModCommonWithAlignmentOffset_EmitsAlignmentOffsetLine()
+    {
+        var modCommon = new A2lModCommon(
+            Comment: "",
+            ByteOrder: A2lByteOrder.MSB_LAST,
+            DataSize: null,
+            AlignmentByteOrder: null,
+            AlignmentOffset: 8UL,
+            SourceLines: new LineRange(1, 1));
+
+        var doc = new A2lDocument(
+            Version: A2lVersion.V1_31, ProjectName: "P", ProjectComment: "",
+            HeaderComment: "", ModCommon: modCommon,
+            Modules: new List<A2lModule>(), RawText: "", SourceLineCount: 1);
+        var sw = new StringWriter();
+        new A2lDocumentWriter().WriteToString(doc, sw);
+
+        sw.ToString().Should().Contain("ALIGNMENT_OFFSET 8");
+    }
+
     /// <summary>
     /// Test helper: runs WriteToString into a StringWriter and returns the produced text.
     /// Exposed as a public nested class so cross-file tests (BmsModelParserVerifyTests)
