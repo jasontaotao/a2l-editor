@@ -366,7 +366,7 @@ public sealed class Asap131Parser
         ulong ecuAddress = 0;
         if (Current.Kind == TokenKind.Number)
         {
-            // Mirror ParseMeasurement's ECU_ADDRESS hex-strip pattern (支持 0x1A 形式)
+            // Mirror ParseMeasurement's ECU_ADDRESS hex-strip pattern (supports 0x1A-style addresses)
             var txt = Current.Text.TrimStart('0', 'x', 'X');
             ulong.TryParse(txt, System.Globalization.NumberStyles.HexNumber,
                 System.Globalization.CultureInfo.InvariantCulture, out ecuAddress);
