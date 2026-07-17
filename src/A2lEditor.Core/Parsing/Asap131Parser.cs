@@ -371,6 +371,11 @@ public sealed class Asap131Parser
             }
             if (depth > 0) Consume();
         }
+        // 关闭 Plan v0.1.1 verify-bug.md Risks #1: consume the terminating /end
+        // BLOCK_NAME pair that brought depth to 0. Reuses TryConsumeKeyword's
+        // built-in block-name consume (L387-392). All 4 callers (ParseModule
+        // default, ParseGroup else) become safe — no caller change needed.
+        if (depth == 0) TryConsumeKeyword("/end");
     }
 
     private Token Current => _tokens[_pos];

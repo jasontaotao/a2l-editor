@@ -154,4 +154,29 @@ public class Asap131ParserTests
         var result = Asap131Parser.ParseText(text);
         result.Value!.RawText.Should().Be(text);
     }
+
+    [Fact]
+    public void Parse_SkipToMatchingEnd_ConsumesEndBlockName_NoLeak()
+    {
+        // Regression test for Plan v0.1.1 verify-bug.md Risks #1:
+        // SkipToMatchingEnd previously exited with pos on the terminating /end
+        // token, leaking the block-name. After fix, pos should be past /end BLOCK_NAME.
+        // The MEASUREMENT after the unknown block must still parse correctly.
+        const string text = "ASAP2_VERSION 1 31\n"
+            + "/begin PROJECT P\n"
+            + " /begin MODULE M \"\"\n"
+            + "  /begin UNKNOWN_X\n"
+            + "   /begin UNKNOWN_Y /end UNKNOWN_Y\n"
+            + "  /end UNKNOWN_X\n"
+            + "  /begin MEASUREMENT meas1 \"\" UBYTE CM 0 0 0 255 /end MEASUREMENT\n"
+            + " /end MODULE\n"
+            + "/end PROJECT\n";
+        var result = Asap131Parser.ParseText(text);
+        result.HasErrors.Should().BeFalse(
+            $"no errors expected; actual: {string.Join("; ", result.Errors.Select(e => $"L{e.Line}:{e.Message}"))}");
+        result.Value!.Modules.Should().HaveCount(1);
+        result.Value!.Modules[0].Measurements.Should().HaveCount(1,
+            "MEASUREMENT after skipped UNKNOWN_X block must be parsed correctly");
+        result.Value!.Modules[0].Measurements[0].Name.Should().Be("meas1");
+    }
 }
