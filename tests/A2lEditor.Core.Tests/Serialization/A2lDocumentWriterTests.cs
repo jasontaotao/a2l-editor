@@ -193,7 +193,7 @@ public class A2lDocumentWriterTests
         second.HasFatalErrors.Should().BeFalse();
     }
 
-    [Fact(Skip = "v0.3 Writer refactored; HEADER block emission deferred to v0.4")]
+    [Fact]
     public void Write_DocumentWithHeaderBlock_IncludesHeaderBoundary()
     {
         var doc = new A2lDocument(
@@ -215,7 +215,7 @@ public class A2lDocumentWriterTests
         second.Value!.HeaderComment.Should().Be("MyHeader");
     }
 
-    [Fact(Skip = "v0.3 Writer refactored; quote escaping in strings deferred to v0.4")]
+    [Fact]
     public void Write_EscapesQuotesInStrings()
     {
         var doc = new A2lDocument(

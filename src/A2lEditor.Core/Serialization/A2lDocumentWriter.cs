@@ -17,24 +17,24 @@ public sealed class A2lDocumentWriter
 
         sw.Write("/begin PROJECT ");
         sw.Write(doc.ProjectName);
-        if (!string.IsNullOrEmpty(doc.ProjectComment))
-        {
-            sw.Write(" \"");
-            sw.Write(doc.ProjectComment);
-            sw.Write('"');
-        }
+        sw.Write(' ');
+        WriteEscapedString(sw, doc.ProjectComment);
         sw.WriteLine();
+
+        // v0.4: HEADER block (per project, if present)
+        if (!string.IsNullOrEmpty(doc.HeaderComment))
+        {
+            sw.Write(" /begin HEADER ");
+            WriteEscapedString(sw, doc.HeaderComment);
+            sw.WriteLine(" /end HEADER");
+        }
 
         // v0.3: MOD_COMMON block (per project, if present)
         if (doc.ModCommon is not null)
         {
             sw.Write("/begin MOD_COMMON ");
-            if (!string.IsNullOrEmpty(doc.ModCommon.Comment))
-            {
-                sw.Write("\"");
-                sw.Write(doc.ModCommon.Comment);
-                sw.Write("\" ");
-            }
+            WriteEscapedString(sw, doc.ModCommon.Comment);
+            sw.Write(' ');
             sw.Write("BYTE_ORDER ");
             sw.WriteLine(doc.ModCommon.ByteOrder == A2lByteOrder.MSB_LAST ? "MSB_LAST" : "MSB_FIRST");
             sw.WriteLine("/end MOD_COMMON");
@@ -48,6 +48,14 @@ public sealed class A2lDocumentWriter
         sw.WriteLine("/end PROJECT");
     }
 
+    private static void WriteEscapedString(TextWriter sw, string? s)
+    {
+        if (string.IsNullOrEmpty(s)) return;
+        sw.Write('"');
+        sw.Write(StringLiteralEscaper.Escape(s));
+        sw.Write('"');
+    }
+
     private static int MinorVersion(A2lVersion v) => v switch
     {
         A2lVersion.V1_31 => 31,
@@ -59,24 +67,15 @@ public sealed class A2lDocumentWriter
     {
         sw.Write("/begin MODULE ");
         sw.Write(module.Name);
-        if (!string.IsNullOrEmpty(module.Comment))
-        {
-            sw.Write(" \"");
-            sw.Write(module.Comment);
-            sw.Write('"');
-        }
+        sw.Write(' ');
+        WriteEscapedString(sw, module.Comment);
         sw.WriteLine();
 
         // v0.3: MOD_PAR block (per module, if present)
         if (module.ModPar is not null)
         {
             sw.Write("/begin MOD_PAR ");
-            if (!string.IsNullOrEmpty(module.ModPar))
-            {
-                sw.Write("\"");
-                sw.Write(module.ModPar);
-                sw.Write("\"");
-            }
+            WriteEscapedString(sw, module.ModPar);
             sw.WriteLine(" /end MOD_PAR");
         }
 
