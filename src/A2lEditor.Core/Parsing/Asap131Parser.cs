@@ -146,7 +146,7 @@ public sealed class Asap131Parser
         var axisDescr = new List<A2lAxisDescr>();
         var userRights = new List<A2lUserRights>();
         var versionInfo = new List<A2lVersionInfo>();
-        var axisPtsX = new List<A2lAxisPtsX>();  // v0.6: AXIS_PTS_X list (parsing TBD)
+        var axisPtsX = new List<A2lAxisPtsX>();  // v0.6: AXIS_PTS_X list
         string? moduleModPar = null;  // v0.3: track MOD_PAR comment
 
         while (!(Current.Kind == TokenKind.Keyword && Current.Text == "/end"))
