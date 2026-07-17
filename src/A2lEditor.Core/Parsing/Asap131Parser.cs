@@ -112,6 +112,7 @@ public sealed class Asap131Parser
         var compuMethods = new List<A2lCompuMethod>();
         var recordLayouts = new List<A2lRecordLayout>();
         var groups = new List<A2lGroup>();
+        string? moduleModPar = null;  // v0.3: track MOD_PAR comment
 
         while (!(Current.Kind == TokenKind.Keyword && Current.Text == "/end"))
         {
@@ -144,6 +145,13 @@ public sealed class Asap131Parser
                     case "GROUP":
                         groups.Add(ParseGroup());
                         break;
+                    case "MOD_PAR":
+                    {
+                        string mpComment = Current.Kind == TokenKind.StringLiteral ? Consume().Text : "";
+                        TryConsumeKeyword("/end");
+                        moduleModPar = mpComment;
+                        break;
+                    }
                     default:
                         _errors.Add(Error($"Unknown block {blockName}, skipped", ErrorSeverity.Warning));
                         SkipToMatchingEnd();
@@ -159,7 +167,7 @@ public sealed class Asap131Parser
         int endLine = Current.Line;
         range = new LineRange(startLine, endLine);
         return new A2lModule(name, comment, measurements, characteristics, axisPts,
-            compuMethods, recordLayouts, groups, null, range);
+            compuMethods, recordLayouts, groups, moduleModPar, range);
     }
 
     private A2lMeasurement ParseMeasurement()

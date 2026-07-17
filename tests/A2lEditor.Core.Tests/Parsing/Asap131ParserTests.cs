@@ -156,6 +156,22 @@ public class Asap131ParserTests
     }
 
     [Fact]
+    public void Parse_ModuleWithModPar_StoresModParComment()
+    {
+        const string text = "ASAP2_VERSION 1 31\n"
+            + "/begin PROJECT P\n"
+            + " /begin MODULE M \"\"\n"
+            + "  /begin MOD_PAR \"my mod par comment\" /end MOD_PAR\n"
+            + " /end MODULE\n"
+            + "/end PROJECT\n";
+        var result = Asap131Parser.ParseText(text);
+        result.HasErrors.Should().BeFalse(
+            $"no errors expected; actual: {string.Join("; ", result.Errors.Select(e => $"L{e.Line}:{e.Message}"))}");
+        result.Value!.Modules.Should().HaveCount(1);
+        result.Value!.Modules[0].ModPar.Should().Be("my mod par comment");
+    }
+
+    [Fact]
     public void Parse_SkipToMatchingEnd_ConsumesEndBlockName_NoLeak()
     {
         // Regression test for Plan v0.1.1 verify-bug.md Risks #1:
