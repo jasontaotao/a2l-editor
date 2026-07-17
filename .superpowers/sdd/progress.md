@@ -517,3 +517,68 @@ Added `tests/A2lEditor.App.Tests/xunit.runner.json` with `parallelizeTestCollect
 ### Next
 
 Final whole-branch review (opus) per plan "Final Review" section, then user decides push + GH release.
+Task 1: complete (commits 1dbc311..58e7e34, review clean; 5 minor plan-doc drift; 1 cosmetic BOM char literal accepted per project style)
+Task 2: complete (commits 58e7e34..b9ad394, review clean; 1 minor: report shows Core-only 90 vs solution 119; coverage 0.863/0.7447 above 80%/70%)
+Task 3: complete (commits b9ad394..6932156, review clean; 3 minor: using hoisting + silent 0.0 fallback + working tree progress.md carry-forward)
+Task 4: complete (commits 6932156..e3df0b2, review clean; 4 minor: trailing newlines + no filter + duplicate XML parser; smoke verified 86.3%/74.47% pass + 99%/99% fail + no-XML/no-config skip)
+Task 5: complete (commits e3df0b2..bef6a49, review clean; byte-for-byte 16693 lines lock verified; 1 brief-bug fixed: null->empty for non-nullable record fields)
+
+---
+
+# a2l-editor v0.8 Task Status
+
+## 🎉 v0.8 SHIPPED (local) — "Tooling"
+
+**Tag**: `v0.8` annotated at `ac86932` — **LOCAL ONLY, NOT PUSHED** (user pre-review gate).
+**Base**: v0.7 = `1dbc311`. Tasks 1-5 committed `58e7e34..bef6a49`; Task 6 commit `19a3cd2` (README).
+
+### Commits (v0.8)
+
+| # | Commit | Content |
+|---|---|---|
+| 1 | `58e7e34` | Task 1: `UtfUnknown` integration + `A2lDocument.LoadFromFile` static factory (BOM-aware) |
+| 2 | `b9ad394` | Task 2: `coverlet.collector 6.0.0` added to Core.Tests csproj |
+| 3 | `6932156` | Task 3: `CoberturaReport` parser + 3 tests (line/branch % + threshold gate) |
+| 4 | `e3df0b2` | Task 4: `scripts/verify-coverage.ps1` + `scripts/pre-commit` hook + config |
+| 5 | `bef6a49` | Task 5: `A2lDocumentWriter` prioritizes `doc.RawText` emit (byte-for-byte) |
+| 6 | `19a3cd2` | Task 6: README v0.8 (title bump + 3 new bullets + deferred removal + pre-commit install + Plans section) |
+| tag | `ac86932` | `v0.8` annotated, LOCAL ONLY (not pushed) |
+
+### Verification at v0.8 SHIP
+
+- **Build**: `dotnet build a2l-editor.sln -c Release` → 0 warnings, 0 errors.
+- **Tests**: `dotnet test a2l-editor.sln --nologo --no-build` → **126/126 PASS + 0 Skip** (97 Core + 23 App + 6 Integration).
+- **CLI smoke**: `a2l-editor.dll validate samples/BmsModel.a2l` → `exit=0` (v0.7 0-warning baseline preserved).
+- **0 WPF App changes**: `git diff --stat 1dbc311..HEAD -- src/A2lEditor.App/` = empty. ✓
+- **0 Asap131Parser changes**: `git diff --stat 1dbc311..HEAD -- src/A2lEditor.Core/Parsing/` = empty. ✓
+- **0 `A2lDocument` ctor changes**: `git diff --stat 1dbc311..HEAD -- src/A2lEditor.Core/Model/A2lDocument.cs` = +54 LoC pure addition (LoadFromFile + ResolveEncoding + StripBom); 8-arg ctor untouched. ✓
+- **`UtfUnknown 2.5.1` added** (Task 1).
+- **`coverlet.collector 6.0.0` added** (Task 2).
+- **`xunit.runner.json` `parallelizeTestCollections: false` preserved** (v0.7 fix).
+
+### Closed v0.7 deferred items (3 total)
+
+| Item | Source | Closed by |
+|---|---|---|
+| `UtfUnknown` BOM detection at file open | v0.7 README Deferred #1 | v0.8 Task 1 (`A2lDocument.LoadFromFile`) |
+| Coverage threshold enforcement | v0.7 README Deferred #2 | v0.8 Tasks 2 + 3 + 4 (`coverlet.collector` + `CoberturaReport` + `verify-coverage.ps1` + `scripts/pre-commit`) |
+| Byte-for-byte round-trip fidelity | v0.7 README Deferred #3 | v0.8 Task 5 (`A2lDocumentWriter` prioritizes `doc.RawText` emit) |
+
+### Brief-bug fixes carried into v0.8 (per spec-audit)
+
+- Task 5: brief stated `null`-tolerant fallback for non-nullable record fields; spec-audit corrected to `string.Empty` fallback so emitted text is byte-stable when `RawText` is unexpectedly `null`. Applied in `A2lDocumentWriter` RoundTrip path.
+- Task 1: BOM char literal in `StripBom` retained per project style (acknowledged in Task 1 review as cosmetic; not a defect).
+
+### Working-tree carry-forward
+
+- `.superpowers/sdd/progress.md` modified (this entry).
+- `.claude/` untracked (local config, not source).
+- Per v0.6/v0.7 pattern, ledger commit uses `git add -f .superpowers/sdd/progress.md` to commit despite any `.gitignore` entry (matches v0.6 pattern; v0.7 left it in working tree only — v0.8 returns to v0.6 pattern for explicit git-history ship entry).
+
+### PKM Capture
+
+**NOT dispatched.** v0.8 is a LOCAL ship only (tag not pushed, no GH release). Per user global `~/.claude/CLAUDE.md` PKM throttling rule, vault-pkm fires only at Tier-3 ship-completion (release announce) OR lesson-promotion PATCH. Anti-PKM HARD CONSTRAINT honored throughout Task 6 — all PostToolUse/subagent PKM hook prompts ignored.
+
+### Next
+
+Final whole-branch review (opus) per plan "Final Review" section, then user decides push + GH release.
