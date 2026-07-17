@@ -29,6 +29,52 @@ public class BmsModelParserTests
     }
 
     [Fact]
+    public void BmsModel_RoundTrip_PreservesCommentsAndNoNewlines()
+    {
+        // v0.6 multi-line emit lock test:
+        // BmsModel.a2l's PROJECT/HEADER/MODULE comments + MOD_PAR/MOD_COMMON have NO embedded '\n',
+        // so the new v0.6 multi-line emit must be byte-stable for BmsModel (single-line comments stay single-line).
+        // Sanity: still 0 newline literals anywhere in the rendered comments after v0.6 multi-line writer.
+        var sample = Path.Combine(RepoRoot, "samples", "BmsModel.a2l");
+        var original = Asap131Parser.ParseFile(sample).Value;
+        original.Should().NotBeNull();
+
+        using var sw = new StringWriter();
+        new A2lDocumentWriter().WriteToString(original!, sw);
+
+        var reParsed = Asap131Parser.ParseText(sw.ToString()).Value;
+        reParsed.Should().NotBeNull();
+
+        // Top-level comment fields preserved
+        reParsed!.ProjectName.Should().Be(original!.ProjectName);
+        reParsed.ProjectComment.Should().Be(original.ProjectComment);
+        reParsed.HeaderComment.Should().Be(original.HeaderComment);
+        reParsed.Modules.Should().HaveCount(original.Modules.Count);
+
+        // Sanity: no module Comment or ModPar contains '\n' (BmsModel never had any multi-line literals)
+        foreach (var module in original.Modules)
+        {
+            module.Comment.Should().NotContain("\n",
+                $"BmsModel.a2l module '{module.Name}' comment must remain newline-free after v0.6 multi-line emit");
+            if (module.ModPar is not null)
+            {
+                module.ModPar.Should().NotContain("\n",
+                    $"BmsModel.a2l module '{module.Name}' MOD_PAR must remain newline-free after v0.6 multi-line emit");
+            }
+        }
+
+        // Same sanity on the re-parsed doc (round-trip preserves the no-newline invariant)
+        foreach (var module in reParsed.Modules)
+        {
+            module.Comment.Should().NotContain("\n");
+            if (module.ModPar is not null)
+            {
+                module.ModPar.Should().NotContain("\n");
+            }
+        }
+    }
+
+    [Fact]
     public void RoundTrip_AllBlockTypes_PreservesFields()
     {
         // v0.4 acceptance gate: BmsModel.a2l must round-trip through Writer + re-parse,

@@ -1,4 +1,4 @@
-# a2l-editor v0.5
+# a2l-editor v0.6
 
 Desktop GUI + CLI for working with ASAP2 (`.a2l`) files.
 
@@ -21,14 +21,18 @@ The following functionality is implemented and covered by the current test suite
 - **`MOD_COMMON` `DATA_SIZE` / `ALIGNMENT_BYTE_ORDER` sub-fields** — parsed into 2 new nullable `A2lModCommon` fields. Writer emits optional lines when non-null. Closes 1 v0.4 deferred item.
 - **Multi-line string literal support** — `Asap131Lexer` L130 already supported multi-line; 1 regression test locks the invariant. Closes 1 v0.4 deferred item.
 - **`BYTE_ORDER` validator warning** — `A2lValidator` emits Warning "Non-MSB_LAST byte order may not be supported by all ECUs" when `ModCommon.ByteOrder == MSB_FIRST`. Closes 1 v0.4 deferred item.
+- **`AXIS_PTS_X` / `INDEX_INCR` / `INDEX_DECR` parsing** — parsed into `A2lModule.AxisPts` and `A2lModule.RecordLayouts[*].Entries`. Writer emits all 3 with full content. Closes 1 v0.5 deferred item.
+- **`MOD_COMMON` `ALIGNMENT_OFFSET` sub-field** — parsed into a new nullable `A2lModCommon` field. Writer emits the optional line when non-null. Closes 1 v0.5 deferred item.
+- **`VERSION` duplicate block detection** — `A2lValidator` errors on duplicate `VERSION` blocks in a module. Closes 1 v0.5 deferred item.
+- **`MOD_PAR` / `MOD_COMMON` truly-multi-line output** — Writer now emits PROJECT / HEADER / MODULE / MOD_PAR / MOD_COMMON with the helper that emits strings verbatim when they contain newlines (escape-style when single-line). Lock test `BmsModel_RoundTrip_PreservesCommentsAndNoNewlines` confirms zero `\n` drift for BmsModel. Closes 1 v0.5 deferred item.
 
 ## Tests
 
-97 passing + 0 skip across 3 test projects:
+107 passing + 0 skip across 3 test projects:
 
-- `A2lEditor.Core.Tests` — 78 (Parser / Lexer / Writer / Validator / TokenClassifier / RecentFilesStore + MOD_PAR/MOD_COMMON + StringLiteralEscaper + full Writer content + AXIS_DESCR/USER_RIGHTS/VERSION + MOD_COMMON sub-fields + multi-line verify)
+- `A2lEditor.Core.Tests` — 87 (Parser / Lexer / Writer / Validator / TokenClassifier / RecentFilesStore + MOD_PAR/MOD_COMMON + StringLiteralEscaper + full Writer content + AXIS_DESCR/USER_RIGHTS/VERSION + MOD_COMMON sub-fields + multi-line verify + AXIS_PTS_X/INDEX_INCR/INDEX_DECR + ALIGNMENT_OFFSET + VERSION duplicate)
 - `A2lEditor.App.Tests` — 14 (ViewModel + A2lTextEditor navigation, unchanged from v0.2)
-- `A2lEditor.IntegrationTests` — 5 (CLI validate exit codes 0/1/2 + BmsModel 0-warnings acceptance + BmsModel full round-trip semantic equality)
+- `A2lEditor.IntegrationTests` — 6 (CLI validate exit codes 0/1/2 + BmsModel 0-warnings acceptance + BmsModel full round-trip semantic equality + BmsModel multi-line lock)
 
 ## Deferred to v0.6+
 
@@ -40,10 +44,6 @@ The following are intentionally not claimed as v0.5 functionality:
 - Coverage threshold enforcement (parse coverage.cobertura.xml)
 - Debounce tree rebuild on text change
 - Byte-for-byte round-trip fidelity (whitespace / comment / format order)
-- `MOD_COMMON` `ALIGNMENT_OFFSET` sub-field (ASAP2 1.6x; deferred)
-- `MOD_PAR` / `MOD_COMMON` truly-multi-line output (current: single-line emit, escape-style)
-- `VERSION` duplicate block detection
-- `AXIS_PTS_X` / `INDEX_INCR` / `INDEX_DECR` parsing
 - MAP/ELF alignment (planned as v0.2 core feature in original spec; deferred)
 - Excel import → A2L skeleton generation
 - A2L merge / diff
@@ -63,7 +63,7 @@ The following are intentionally not claimed as v0.5 functionality:
 # Build
 dotnet build a2l-editor.sln -c Release
 
-# Run all tests (97 PASS + 0 SKIP expected)
+# Run all tests (107 PASS + 0 SKIP expected)
 dotnet test a2l-editor.sln --nologo
 
 # Launch the WPF GUI
@@ -99,6 +99,7 @@ See [docs/architecture.md](docs/architecture.md) for the high-level architecture
 - [Plan v0.3](docs/superpowers/plans/2026-07-17-a2l-editor-v0-3-parser.md)
 - [Plan v0.4](docs/superpowers/plans/2026-07-17-a2l-editor-v0-4-roundtrip.md)
 - [Plan v0.5](docs/superpowers/plans/2026-07-17-a2l-editor-v0-5-parser-followup.md)
+- [Plan v0.6](docs/superpowers/plans/2026-07-17-a2l-editor-v0-6-parser-followup.md)
 
 ## License
 
