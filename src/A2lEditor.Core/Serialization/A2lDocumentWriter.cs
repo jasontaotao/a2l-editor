@@ -1,14 +1,3 @@
-// TODO v0.2: stable round-trip with original A2L field order. Currently the writer
-// emits comment-label-style field positions (e.g. `/* Name */  Sig1`) for readability
-// rather than positional syntax, and Normalizes MOD_PAR/MOD_COMMON synthetic blocks
-// are omitted (the v0.1.1 Parser handles only MEASUREMENT/CHARACTERISTIC/AXIS_PTS/
-// COMPU_METHOD/RECORD_LAYOUT/GROUP). ASAP2_VERSION is normalized to "1 31" or "1 61".
-//
-// v0.1.1 constraints honored here:
-// - Output is parseable by the current Asap131Parser (value != null, no Fatal).
-// - Each MEASUREMENT/MODULE block has a proper /end boundary.
-// - Output is UTF-8 with BOM (WriteToFile).
-using System.Globalization;
 using System.Text;
 using A2lEditor.Core.Model;
 
@@ -16,132 +5,130 @@ namespace A2lEditor.Core.Serialization;
 
 public sealed class A2lDocumentWriter
 {
-    public string Write(A2lDocument doc)
-    {
-        var sb = new StringBuilder();
-        // Stable round-trip: emit a version the Asap131Parser accepts (minor <= 70).
-        // V1_31 -> "1 31"; V1_6x -> "1 61" (instead of brief's "1 71" which is fatal-rejected by parser).
-        sb.AppendLine(doc.Version switch
-        {
-            A2lVersion.V1_31 => "ASAP2_VERSION  1 31",
-            A2lVersion.V1_6x => "ASAP2_VERSION  1 61",
-            _ => "ASAP2_VERSION  1 31"
-        });
-        sb.AppendLine($"/begin PROJECT {doc.ProjectName} \"{EscapeString(doc.ProjectComment)}\"");
-        if (!string.IsNullOrEmpty(doc.HeaderComment))
-        {
-            sb.AppendLine($" /begin HEADER \"{EscapeString(doc.HeaderComment)}\"");
-            sb.AppendLine(" /end HEADER");
-        }
-        foreach (var module in doc.Modules) WriteModule(sb, module);
-        sb.AppendLine("/end PROJECT");
-        return sb.ToString();
-    }
-
     public void WriteToFile(A2lDocument doc, string path)
     {
-        var content = Write(doc);
-        File.WriteAllText(path, content, new UTF8Encoding(true));
+        using var sw = new StreamWriter(path, append: false, Encoding.UTF8);
+        WriteToString(doc, sw);
     }
 
-    private static void WriteModule(StringBuilder sb, A2lModule m)
+    public void WriteToString(A2lDocument doc, TextWriter sw)
     {
-        sb.AppendLine($" /begin MODULE {m.Name} \"{EscapeString(m.Comment)}\"");
-        sb.AppendLine();
-        foreach (var rl in m.RecordLayouts) WriteRecordLayout(sb, rl);
-        foreach (var cm in m.CompuMethods) WriteCompuMethod(sb, cm);
-        foreach (var meas in m.Measurements) WriteMeasurement(sb, meas);
-        foreach (var ch in m.Characteristics) WriteCharacteristic(sb, ch);
-        foreach (var ax in m.AxisPts) WriteAxisPts(sb, ax);
-        foreach (var gr in m.Groups) WriteGroup(sb, gr);
-        sb.AppendLine(" /end MODULE");
-    }
+        sw.WriteLine($"ASAP2_VERSION 1 {MinorVersion(doc.Version)}");
 
-    private static void WriteMeasurement(StringBuilder sb, A2lMeasurement m)
-    {
-        sb.AppendLine("  /begin MEASUREMENT");
-        sb.AppendLine($"  /* Name                   */      {m.Name}");
-        sb.AppendLine($"  /* Long Identifier        */      \"{EscapeString(m.LongIdentifier)}\"");
-        sb.AppendLine($"  /* Data type              */      {m.DataType}");
-        sb.AppendLine($"  /* Conversion method      */      {m.CompuMethod}");
-        sb.AppendLine($"  /* Resolution             */      {m.Resolution}");
-        sb.AppendLine($"  /* Accuracy               */      {m.Accuracy}");
-        sb.AppendLine($"  /* Lower Limit            */      {m.LowerLimit}");
-        sb.AppendLine($"  /* Upper Limit            */      {m.UpperLimit}");
-        sb.AppendLine($"   ECU_ADDRESS                       0x{m.EcuAddress:X}");
-        sb.AppendLine("  /end MEASUREMENT");
-        sb.AppendLine();
-    }
-
-    private static void WriteCharacteristic(StringBuilder sb, A2lCharacteristic c)
-    {
-        sb.AppendLine("  /begin CHARACTERISTIC");
-        sb.AppendLine($"  /* Name                   */      {c.Name}");
-        sb.AppendLine($"  /* Long Identifier        */      \"{EscapeString(c.LongIdentifier)}\"");
-        sb.AppendLine($"  /* Record Layout          */      {c.RecordLayout}");
-        sb.AppendLine($"  /* ECU Address            */      0x{c.EcuAddress:X}");
-        sb.AppendLine($"  /* Lower Limit            */      {c.LowerLimit}");
-        sb.AppendLine($"  /* Upper Limit            */      {c.UpperLimit}");
-        sb.AppendLine("  /end CHARACTERISTIC");
-        sb.AppendLine();
-    }
-
-    private static void WriteAxisPts(StringBuilder sb, A2lAxisPts a)
-    {
-        sb.AppendLine("  /begin AXIS_PTS");
-        sb.AppendLine($"  /* Name                   */      {a.Name}");
-        sb.AppendLine($"  /* Long Identifier        */      \"{EscapeString(a.LongIdentifier)}\"");
-        sb.AppendLine($"  /* Record Layout          */      {a.RecordLayout}");
-        sb.AppendLine($"  /* ECU Address            */      0x{a.EcuAddress:X}");
-        sb.AppendLine($"  /* Input Quantity         */      {a.InputQuantity}");
-        sb.AppendLine($"  /* Conversion Method      */      {a.CompuMethod}");
-        sb.AppendLine($"  /* Number of Axis Pts     */      {a.NumberOfAxisPts}");
-        sb.AppendLine($"  /* Lower Limit            */      {a.LowerLimit}");
-        sb.AppendLine($"  /* Upper Limit            */      {a.UpperLimit}");
-        sb.AppendLine("  /end AXIS_PTS");
-        sb.AppendLine();
-    }
-
-    private static void WriteCompuMethod(StringBuilder sb, A2lCompuMethod cm)
-    {
-        sb.AppendLine("  /begin COMPU_METHOD");
-        sb.AppendLine($"  /* Name                   */      {cm.Name}");
-        sb.AppendLine($"  /* Long Identifier        */      \"{EscapeString(cm.LongIdentifier)}\"");
-        sb.AppendLine($"  /* Conversion Type        */      {cm.ConversionType}");
-        sb.AppendLine($"  /* Format                 */      \"{cm.Format}\"");
-        sb.AppendLine($"  /* Units                  */      \"{EscapeString(cm.Unit)}\"");
-        sb.AppendLine($"  /* Coefficients           */      COEFFS {cm.CoeffA.ToString(CultureInfo.InvariantCulture)} {cm.CoeffB.ToString(CultureInfo.InvariantCulture)} {cm.CoeffC.ToString(CultureInfo.InvariantCulture)} {cm.CoeffD.ToString(CultureInfo.InvariantCulture)} {cm.CoeffE.ToString(CultureInfo.InvariantCulture)} {cm.CoeffF.ToString(CultureInfo.InvariantCulture)}");
-        sb.AppendLine("  /end COMPU_METHOD");
-        sb.AppendLine();
-    }
-
-    private static void WriteRecordLayout(StringBuilder sb, A2lRecordLayout rl)
-    {
-        sb.AppendLine($"  /begin RECORD_LAYOUT {rl.Name}");
-        foreach (var e in rl.Entries)
-            sb.AppendLine($"   {e.Keyword} {e.Position} {e.DataType} {e.IndexMode} {e.AddressingMode}");
-        sb.AppendLine("  /end RECORD_LAYOUT");
-        sb.AppendLine();
-    }
-
-    private static void WriteGroup(StringBuilder sb, A2lGroup g)
-    {
-        sb.AppendLine($"  /begin GROUP {g.Name} \"{EscapeString(g.LongIdentifier)}\" {(g.IsRoot ? "ROOT" : "")}");
-        if (g.RefMeasurements.Count > 0)
+        sw.Write("/begin PROJECT ");
+        sw.Write(doc.ProjectName);
+        if (!string.IsNullOrEmpty(doc.ProjectComment))
         {
-            sb.AppendLine("   /begin REF_MEASUREMENT");
-            foreach (var r in g.RefMeasurements) sb.AppendLine($"    {r}");
-            sb.AppendLine("   /end REF_MEASUREMENT");
+            sw.Write(" \"");
+            sw.Write(doc.ProjectComment);
+            sw.Write('"');
         }
-        if (g.RefCharacteristics.Count > 0)
+        sw.WriteLine();
+
+        // v0.3: MOD_COMMON block (per project, if present)
+        if (doc.ModCommon is not null)
         {
-            sb.AppendLine("   /begin REF_CHARACTERISTIC");
-            foreach (var r in g.RefCharacteristics) sb.AppendLine($"    {r}");
-            sb.AppendLine("   /end REF_CHARACTERISTIC");
+            sw.Write("/begin MOD_COMMON ");
+            if (!string.IsNullOrEmpty(doc.ModCommon.Comment))
+            {
+                sw.Write("\"");
+                sw.Write(doc.ModCommon.Comment);
+                sw.Write("\" ");
+            }
+            sw.Write("BYTE_ORDER ");
+            sw.WriteLine(doc.ModCommon.ByteOrder == A2lByteOrder.MSB_LAST ? "MSB_LAST" : "MSB_FIRST");
+            sw.WriteLine("/end MOD_COMMON");
         }
-        sb.AppendLine("  /end GROUP");
-        sb.AppendLine();
+
+        foreach (var module in doc.Modules)
+        {
+            WriteModule(sw, module);
+        }
+
+        sw.WriteLine("/end PROJECT");
     }
 
-    private static string EscapeString(string s) => s.Replace("\"", "\\\"");
+    private static int MinorVersion(A2lVersion v) => v switch
+    {
+        A2lVersion.V1_31 => 31,
+        A2lVersion.V1_6x => 61,
+        _ => 31,
+    };
+
+    private static void WriteModule(TextWriter sw, A2lModule module)
+    {
+        sw.Write("/begin MODULE ");
+        sw.Write(module.Name);
+        if (!string.IsNullOrEmpty(module.Comment))
+        {
+            sw.Write(" \"");
+            sw.Write(module.Comment);
+            sw.Write('"');
+        }
+        sw.WriteLine();
+
+        // v0.3: MOD_PAR block (per module, if present)
+        if (module.ModPar is not null)
+        {
+            sw.Write("/begin MOD_PAR ");
+            if (!string.IsNullOrEmpty(module.ModPar))
+            {
+                sw.Write("\"");
+                sw.Write(module.ModPar);
+                sw.Write("\"");
+            }
+            sw.WriteLine(" /end MOD_PAR");
+        }
+
+        // Existing per-block writes (MEASUREMENT, CHARACTERISTIC, etc.) preserved from v0.1.1
+        foreach (var meas in module.Measurements) WriteMeasurement(sw, meas);
+        foreach (var ch in module.Characteristics) WriteCharacteristic(sw, ch);
+        foreach (var ap in module.AxisPts) WriteAxisPts(sw, ap);
+        foreach (var cm in module.CompuMethods) WriteCompuMethod(sw, cm);
+        foreach (var rl in module.RecordLayouts) WriteRecordLayout(sw, rl);
+        foreach (var gr in module.Groups) WriteGroup(sw, gr);
+
+        sw.WriteLine("/end MODULE");
+    }
+
+    private static void WriteMeasurement(TextWriter sw, A2lMeasurement m)
+    {
+        sw.Write("/begin MEASUREMENT ");
+        sw.Write(m.Name);
+        if (!string.IsNullOrEmpty(m.LongIdentifier))
+        {
+            sw.Write(" \"");
+            sw.Write(m.LongIdentifier);
+            sw.Write('"');
+        }
+        sw.Write(' ');
+        sw.Write(m.DataType);
+        sw.Write(' ');
+        sw.WriteLine("/end MEASUREMENT");
+    }
+
+    private static void WriteCharacteristic(TextWriter sw, A2lCharacteristic c)
+    {
+        sw.Write("/begin CHARACTERISTIC ");
+        sw.Write(c.Name);
+        if (!string.IsNullOrEmpty(c.LongIdentifier))
+        {
+            sw.Write(" \"");
+            sw.Write(c.LongIdentifier);
+            sw.Write('"');
+        }
+        sw.WriteLine(" /end CHARACTERISTIC");
+    }
+
+    private static void WriteAxisPts(TextWriter sw, A2lAxisPts a) =>
+        sw.WriteLine($"/begin AXIS_PTS {a.Name} /end AXIS_PTS");
+
+    private static void WriteCompuMethod(TextWriter sw, A2lCompuMethod c) =>
+        sw.WriteLine($"/begin COMPU_METHOD {c.Name} /end COMPU_METHOD");
+
+    private static void WriteRecordLayout(TextWriter sw, A2lRecordLayout r) =>
+        sw.WriteLine($"/begin RECORD_LAYOUT {r.Name} /end RECORD_LAYOUT");
+
+    private static void WriteGroup(TextWriter sw, A2lGroup g) =>
+        sw.WriteLine($"/begin GROUP {g.Name} /end GROUP");
 }

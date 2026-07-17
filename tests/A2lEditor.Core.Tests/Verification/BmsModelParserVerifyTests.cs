@@ -15,6 +15,7 @@
 // equality is the load-bearing assertion.
 using A2lEditor.Core.Parsing;
 using A2lEditor.Core.Serialization;
+using A2lEditor.Core.Tests.Serialization;
 using FluentAssertions;
 using Xunit;
 
@@ -38,7 +39,7 @@ public class BmsModelParserVerifyTests
         originalDoc.Modules.Should().NotBeEmpty();
 
         // Write to A2L text
-        var written = new A2lDocumentWriter().Write(originalDoc);
+        var written = A2lDocumentWriterTests.WriterHelper.WriteToString(originalDoc);
         written.Should().NotBeNullOrEmpty();
 
         // Second parse of the writer output
@@ -82,7 +83,7 @@ public class BmsModelParserVerifyTests
         var first = Asap131Parser.ParseFile(SamplePath());
         first.Value.Should().NotBeNull();
 
-        var written = new A2lDocumentWriter().Write(first.Value!);
+        var written = A2lDocumentWriterTests.WriterHelper.WriteToString(first.Value!);
 
         var second = Asap131Parser.ParseText(written);
         second.Value.Should().NotBeNull();
