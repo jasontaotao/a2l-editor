@@ -11,6 +11,14 @@ public sealed class A2lValidator
         if (string.IsNullOrEmpty(doc.ProjectName))
             errors.Add(new ParseError(1, 1, "PROJECT name is empty", ErrorSeverity.Error));
 
+        // v0.5: BYTE_ORDER warning
+        if (doc.ModCommon?.ByteOrder == A2lByteOrder.MSB_FIRST)
+        {
+            errors.Add(new ParseError(0, 0,
+                "Non-MSB_LAST byte order may not be supported by all ECUs",
+                ErrorSeverity.Warning));
+        }
+
         foreach (var module in doc.Modules)
         {
             ValidateModule(module, errors);

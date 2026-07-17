@@ -92,4 +92,16 @@ public class A2lValidatorTests
         errors.Should().Contain(e => e.Severity == ErrorSeverity.Warning &&
             e.Message.Contains("unknown COMPU_METHOD"));
     }
+
+    [Fact]
+    public void Validate_MsbFirstByteOrder_EmitsWarning()
+    {
+        var doc = new A2lDocument(
+            A2lVersion.V1_31, "P", "", "",
+            new A2lModCommon("", A2lByteOrder.MSB_FIRST, null, null, new LineRange(0, 0)),
+            new List<A2lModule>(), "", 1);
+        var errors = new A2lValidator().Validate(doc);
+        errors.Should().Contain(e => e.Severity == ErrorSeverity.Warning &&
+            e.Message.Contains("MSB_LAST"));
+    }
 }
