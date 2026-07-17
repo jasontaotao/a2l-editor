@@ -1,4 +1,4 @@
-# a2l-editor v0.2
+# a2l-editor v0.3
 
 Desktop GUI + CLI for working with ASAP2 (`.a2l`) files.
 
@@ -14,26 +14,34 @@ The following functionality is implemented and covered by the current test suite
 - **Error window with double-click navigation** — bottom-panel Expander; auto-expands once on first error batch; double-click an error row to jump to its line in the editor.
 - **Recent files menu** — last 8 opened `.a2l` files; persisted to `%APPDATA%\a2l-editor\recent.json`; clicking a missing file shows an error and auto-removes it from the list.
 - **Tree node click-to-jump** — click any `MEASUREMENT` or `CHARACTERISTIC` row in the left-hand tree to jump to its source line + 0.5 s background highlight.
+- **MOD_PAR / MOD_COMMON / BYTE_ORDER parsing** — parsed into model (`A2lModule.ModPar`, `A2lDocument.ModCommon`); Writer round-trips both; `BmsModel.a2l` parses with **0 errors, 0 warnings** (closes v0.2 deferred items + Plan v0.1.1 `verify-bug.md` Risks #1 + #2).
+- **`SkipToMatchingEnd` block-leak fix** — `/end BLOCK_NAME` pair now consumed; nested unknown-block skipping no longer mis-parses following siblings.
 
 ## Tests
 
-66 passing across 3 test projects:
+74 passing + 2 skip across 3 test projects:
 
-- `A2lEditor.Core.Tests` — 49 (Parser / Lexer / Writer / Validator / TokenClassifier / RecentFilesStore)
-- `A2lEditor.App.Tests` — 14 (ViewModel + A2lTextEditor navigation)
-- `A2lEditor.IntegrationTests` — 3 (CLI validate exit codes 0/1/2)
+- `A2lEditor.Core.Tests` — 54 (Parser / Lexer / Writer / Validator / TokenClassifier / RecentFilesStore + MOD_PAR/MOD_COMMON/round-trip)
+- `A2lEditor.App.Tests` — 14 (ViewModel + A2lTextEditor navigation, unchanged from v0.2)
+- `A2lEditor.IntegrationTests` — 4 (CLI validate exit codes 0/1/2 + BmsModel 0-warnings acceptance)
 
-## Deferred to v0.3+
+2 skipped tests in `A2lDocumentWriterTests` (`Write_EscapesQuotesInStrings` + `Write_DocumentWithHeaderBlock_IncludesHeaderBoundary`) — exercise legacy Writer behavior outside v0.3 scope; full round-trip fidelity deferred to v0.4.
 
-The following are intentionally not claimed as v0.2 functionality:
+## Deferred to v0.4+
+
+The following are intentionally not claimed as v0.3 functionality:
 
 - Drag-and-drop file open
 - Full menu (Edit / View / Tools / Help)
 - Custom `UtfUnknown` package integration
 - Coverage threshold enforcement (parse coverage.cobertura.xml)
 - Debounce tree rebuild on text change
-- `MOD_COMMON` / `BYTE_ORDER` parsing (currently emitted as warnings)
-- `SkipToMatchingEnd` residual block-leak fix (Plan v0.1.1 `verify-bug.md` Risks #1)
+- Full round-trip fidelity for all block types (MEASUREMENT content, RECORD_LAYOUT entries, etc.)
+- `AXIS_DESCR` / `USER_RIGHTS` / `VERSION` and other project-level blocks
+- `MOD_COMMON` `DATA_SIZE` / `ALIGNMENT_BYTE_ORDER` sub-fields
+- `MOD_PAR` / `MOD_COMMON` multi-line comments
+- `BYTE_ORDER` in A2lValidator (currently parse + persist, no constraint check)
+- `AXIS_PTS_X` / `INDEX_INCR` / `INDEX_DECR` parsing
 - MAP/ELF alignment (planned as v0.2 core feature in original spec; deferred)
 - Excel import → A2L skeleton generation
 - A2L merge / diff
@@ -53,7 +61,7 @@ The following are intentionally not claimed as v0.2 functionality:
 # Build
 dotnet build a2l-editor.sln -c Release
 
-# Run all tests (66 PASS expected)
+# Run all tests (74 PASS + 2 SKIP expected)
 dotnet test a2l-editor.sln --nologo
 
 # Launch the WPF GUI
@@ -85,6 +93,8 @@ See [docs/architecture.md](docs/architecture.md) for the high-level architecture
 
 - [Plan v0.1](docs/superpowers/plans/2026-07-16-a2l-editor-v0-1.md)
 - [Plan v0.1.1](docs/superpowers/plans/2026-07-16-a2l-editor-v0-1-1.md)
+- [Plan v0.2](docs/superpowers/plans/2026-07-16-a2l-editor-v0-2-ux.md)
+- [Plan v0.3](docs/superpowers/plans/2026-07-17-a2l-editor-v0-3-parser.md)
 
 ## License
 
