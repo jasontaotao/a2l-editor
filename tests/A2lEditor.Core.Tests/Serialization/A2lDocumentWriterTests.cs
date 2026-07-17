@@ -274,6 +274,55 @@ public class A2lDocumentWriterTests
         output.Should().Contain("my mod par comment");
     }
 
+    // v0.4 Task 3: WriteMeasurement + WriteCharacteristic full content.
+
+    [Fact]
+    public void Write_MeasurementWithAllFields_PreservesEcuAddressAndDataType()
+    {
+        var meas = new A2lMeasurement(
+            "meas1", "long id", A2lDataType.UBYTE, "CM", "0", "0", "0", "255", 0x1000,
+            new LineRange(0, 0));
+        var doc = new A2lDocument(
+            A2lVersion.V1_31, "P", "", "", null,
+            new List<A2lModule> { new A2lModule("M", "", new List<A2lMeasurement> { meas },
+                new List<A2lCharacteristic>(), new List<A2lAxisPts>(), new List<A2lCompuMethod>(),
+                new List<A2lRecordLayout>(), new List<A2lGroup>(), null, new LineRange(0, 0)) },
+            "", 1);
+        using var sw = new StringWriter();
+        new A2lDocumentWriter().WriteToString(doc, sw);
+        var output = sw.ToString();
+        output.Should().Contain("meas1");
+        output.Should().Contain("long id");
+        output.Should().Contain("UBYTE");
+        output.Should().Contain("CM");
+        output.Should().Contain("0");
+        output.Should().Contain("255");
+        output.Should().Contain("ECU_ADDRESS 0x1000");
+    }
+
+    [Fact]
+    public void Write_CharacteristicWithAllFields_PreservesRecordLayoutAndAddress()
+    {
+        var ch = new A2lCharacteristic(
+            "ch1", "long id", "Scalar_UBYTE", 0x2000, "0", "100",
+            new LineRange(0, 0));
+        var doc = new A2lDocument(
+            A2lVersion.V1_31, "P", "", "", null,
+            new List<A2lModule> { new A2lModule("M", "", new List<A2lMeasurement>(),
+                new List<A2lCharacteristic> { ch }, new List<A2lAxisPts>(), new List<A2lCompuMethod>(),
+                new List<A2lRecordLayout>(), new List<A2lGroup>(), null, new LineRange(0, 0)) },
+            "", 1);
+        using var sw = new StringWriter();
+        new A2lDocumentWriter().WriteToString(doc, sw);
+        var output = sw.ToString();
+        output.Should().Contain("ch1");
+        output.Should().Contain("long id");
+        output.Should().Contain("Scalar_UBYTE");
+        output.Should().Contain("2000");
+        output.Should().Contain("0");
+        output.Should().Contain("100");
+    }
+
     /// <summary>
     /// Test helper: runs WriteToString into a StringWriter and returns the produced text.
     /// Exposed as a public nested class so cross-file tests (BmsModelParserVerifyTests)

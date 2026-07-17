@@ -94,15 +94,26 @@ public sealed class A2lDocumentWriter
     {
         sw.Write("/begin MEASUREMENT ");
         sw.Write(m.Name);
-        if (!string.IsNullOrEmpty(m.LongIdentifier))
-        {
-            sw.Write(" \"");
-            sw.Write(m.LongIdentifier);
-            sw.Write('"');
-        }
+        sw.Write(' ');
+        WriteEscapedString(sw, m.LongIdentifier);
         sw.Write(' ');
         sw.Write(m.DataType);
         sw.Write(' ');
+        if (!string.IsNullOrEmpty(m.CompuMethod)) sw.Write(m.CompuMethod);
+        sw.Write(' ');
+        sw.Write(m.Resolution);
+        sw.Write(' ');
+        sw.Write(m.Accuracy);
+        sw.Write(' ');
+        sw.Write(m.LowerLimit);
+        sw.Write(' ');
+        sw.Write(m.UpperLimit);
+        if (m.EcuAddress != 0)
+        {
+            sw.Write(" ECU_ADDRESS 0x");
+            sw.Write(m.EcuAddress.ToString("X"));
+        }
+        sw.WriteLine();
         sw.WriteLine("/end MEASUREMENT");
     }
 
@@ -110,13 +121,18 @@ public sealed class A2lDocumentWriter
     {
         sw.Write("/begin CHARACTERISTIC ");
         sw.Write(c.Name);
-        if (!string.IsNullOrEmpty(c.LongIdentifier))
-        {
-            sw.Write(" \"");
-            sw.Write(c.LongIdentifier);
-            sw.Write('"');
-        }
-        sw.WriteLine(" /end CHARACTERISTIC");
+        sw.Write(' ');
+        WriteEscapedString(sw, c.LongIdentifier);
+        sw.Write(' ');
+        if (!string.IsNullOrEmpty(c.RecordLayout)) sw.Write(c.RecordLayout);
+        sw.Write(' ');
+        if (c.EcuAddress != 0) sw.Write(c.EcuAddress.ToString("X"));
+        sw.Write(' ');
+        sw.Write(c.LowerLimit);
+        sw.Write(' ');
+        sw.Write(c.UpperLimit);
+        sw.WriteLine();
+        sw.WriteLine("/end CHARACTERISTIC");
     }
 
     private static void WriteAxisPts(TextWriter sw, A2lAxisPts a) =>
