@@ -359,4 +359,68 @@ public class Asap131ParserTests
             $"no fatal errors expected; actual: {string.Join("; ", result.Errors.Select(e => $"L{e.Line}:{e.Message}"))}");
         result.Value!.ProjectComment.Should().Be("line1\nline2\nline3");
     }
+
+    // --- v0.6 Task 2 helpers (test-only) ---
+
+    [Fact]
+    public void Parse_AxisPtsX_StoresNameAndMaxAxisPoints()
+    {
+        const string text = "ASAP2_VERSION 1 61\n"
+            + "/begin PROJECT P\n"
+            + " /begin MODULE M \"\"\n"
+            + "  /begin AXIS_PTS_X X_AXIS \"X axis points\" RL_Axis_X 0x1000 Time CM_Time 10 0.0 100.0 /end AXIS_PTS_X\n"
+            + " /end MODULE\n"
+            + "/end PROJECT\n";
+        var result = Asap131Parser.ParseText(text);
+        result.HasFatalErrors.Should().BeFalse(
+            $"no fatal errors expected; actual: {string.Join("; ", result.Errors.Select(e => $"L{e.Line}: {e.Message}"))}");
+        result.Value!.Modules[0].AxisPtsX.Should().HaveCount(1);
+        var ax = result.Value!.Modules[0].AxisPtsX[0];
+        ax.Name.Should().Be("X_AXIS");
+        ax.LongIdentifier.Should().Be("X axis points");
+        ax.RecordLayout.Should().Be("RL_Axis_X");
+        ax.EcuAddress.Should().Be(0x1000UL);
+        ax.MaxAxisPoints.Should().Be(10);
+        ax.InputQuantity.Should().Be("Time");
+        ax.CompuMethod.Should().Be("CM_Time");
+    }
+
+    [Fact]
+    public void Parse_RecordLayoutIndexIncr_StoresIndexIncr()
+    {
+        const string text = "ASAP2_VERSION 1 61\n"
+            + "/begin PROJECT P\n"
+            + " /begin MODULE M \"\"\n"
+            + "  /begin RECORD_LAYOUT RL1\n"
+            + "   SRC_ADDR 0 UBYTE\n"
+            + "   FNC_VALUES 1 UBYTE INDEX_INCR 5\n"
+            + "  /end RECORD_LAYOUT\n"
+            + " /end MODULE\n"
+            + "/end PROJECT\n";
+        var result = Asap131Parser.ParseText(text);
+        result.HasFatalErrors.Should().BeFalse(
+            $"no fatal errors expected; actual: {string.Join("; ", result.Errors.Select(e => $"L{e.Line}: {e.Message}"))}");
+        var rl = result.Value!.Modules[0].RecordLayouts[0];
+        rl.Entries.Should().HaveCount(2);
+        rl.Entries[1].IndexIncr.Should().Be(5UL);
+        rl.Entries[1].IndexDecr.Should().BeNull();
+    }
+
+    [Fact]
+    public void Parse_ModCommonAlignmentOffset_StoresAlignmentOffset()
+    {
+        // MODULE nested inside PROJECT block; MOD_COMMON inside MODULE
+        // matches the v1.61 _moduleModCommon lift fallback.
+        const string text = "ASAP2_VERSION 1 61\n"
+            + "/begin PROJECT P\n"
+            + " /begin MODULE M \"\"\n"
+            + "  /begin MOD_COMMON \"\" BYTE_ORDER MSB_LAST ALIGNMENT_OFFSET 8 /end MOD_COMMON\n"
+            + " /end MODULE\n"
+            + "/end PROJECT\n";
+        var result = Asap131Parser.ParseText(text);
+        result.HasFatalErrors.Should().BeFalse(
+            $"no fatal errors expected; actual: {string.Join("; ", result.Errors.Select(e => $"L{e.Line}: {e.Message}"))}");
+        result.Value!.ModCommon.Should().NotBeNull();
+        result.Value!.ModCommon!.AlignmentOffset.Should().Be(8UL);
+    }
 }

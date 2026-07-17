@@ -205,6 +205,9 @@ public sealed class Asap131Parser
                     case "VERSION":
                         versionInfo.Add(ParseVersionInfo());
                         break;
+                    case "AXIS_PTS_X":
+                        axisPtsX.Add(ParseAxisPtsX());
+                        break;
                     default:
                         _errors.Add(Error($"Unknown block {blockName}, skipped", ErrorSeverity.Warning));
                         SkipToMatchingEnd();
@@ -239,6 +242,7 @@ public sealed class Asap131Parser
         A2lByteOrder byteOrder = A2lByteOrder.MSB_LAST;
         ulong? dataSize = null;
         A2lByteOrder? alignmentByteOrder = null;
+        ulong? alignmentOffset = null;
 
         if (TryConsumeKeyword("BYTE_ORDER"))
         {
@@ -267,8 +271,13 @@ public sealed class Asap131Parser
                 _errors.Add(Error("Expected MSB_FIRST or MSB_LAST after ALIGNMENT_BYTE_ORDER",
                                    ErrorSeverity.Warning));
         }
+        if (TryConsumeKeyword("ALIGNMENT_OFFSET"))
+        {
+            if (Current.Kind == TokenKind.Number && ulong.TryParse(Consume().Text, out var ao))
+                alignmentOffset = ao;
+        }
         TryConsumeKeyword("/end");
-        return new A2lModCommon(mcComment, byteOrder, dataSize, alignmentByteOrder, null,
+        return new A2lModCommon(mcComment, byteOrder, dataSize, alignmentByteOrder, alignmentOffset,
             new LineRange(mcStartLine, Current.Line));
     }
 
@@ -348,6 +357,32 @@ public sealed class Asap131Parser
             n, lo, hi, new LineRange(startLine, Current.Line));
     }
 
+    private A2lAxisPtsX ParseAxisPtsX()
+    {
+        int startLine = Current.Line;
+        string name = Current.Kind == TokenKind.Identifier ? Consume().Text : "";
+        string longId = Current.Kind == TokenKind.StringLiteral ? Consume().Text : "";
+        string recordLayout = Current.Kind == TokenKind.Identifier ? Consume().Text : "";
+        ulong ecuAddress = 0;
+        if (Current.Kind == TokenKind.Number)
+        {
+            // Mirror ParseMeasurement's ECU_ADDRESS hex-strip pattern (支持 0x1A 形式)
+            var txt = Current.Text.TrimStart('0', 'x', 'X');
+            ulong.TryParse(txt, System.Globalization.NumberStyles.HexNumber,
+                System.Globalization.CultureInfo.InvariantCulture, out ecuAddress);
+            Consume();
+        }
+        string inputQty = Current.Kind == TokenKind.Identifier ? Consume().Text : "";
+        string compuMethod = Current.Kind == TokenKind.Identifier ? Consume().Text : "";
+        int maxAxis = 0;
+        if (Current.Kind == TokenKind.Number) int.TryParse(Consume().Text, out maxAxis);
+        string lower = ParseNumber();
+        string upper = ParseNumber();
+        TryConsumeKeyword("/end");
+        return new A2lAxisPtsX(name, longId, recordLayout, ecuAddress, inputQty, compuMethod,
+            maxAxis, lower, upper, new LineRange(startLine, Current.Line));
+    }
+
     private A2lCompuMethod ParseCompuMethod()
     {
         int startLine = Current.Line;
@@ -391,7 +426,19 @@ public sealed class Asap131Parser
                 if (Current.Kind == TokenKind.Identifier) { dt = Consume().Text; }
                 if (Current.Kind == TokenKind.Identifier) { idx = Consume().Text; }
                 if (Current.Kind == TokenKind.Identifier) { addr = Consume().Text; }
-                entries.Add(new RecordLayoutEntry(kw, pos, dt, idx, addr, null, null));
+                ulong? indexIncr = null;
+                ulong? indexDecr = null;
+                if (TryConsumeKeyword("INDEX_INCR"))
+                {
+                    if (Current.Kind == TokenKind.Number && ulong.TryParse(Consume().Text, out var ii))
+                        indexIncr = ii;
+                }
+                if (TryConsumeKeyword("INDEX_DECR"))
+                {
+                    if (Current.Kind == TokenKind.Number && ulong.TryParse(Consume().Text, out var id))
+                        indexDecr = id;
+                }
+                entries.Add(new RecordLayoutEntry(kw, pos, dt, idx, addr, indexIncr, indexDecr));
             }
             else Consume();
         }
