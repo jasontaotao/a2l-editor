@@ -190,9 +190,47 @@ public sealed class A2lDocumentWriter
         sw.WriteLine("/end COMPU_METHOD");
     }
 
-    private static void WriteRecordLayout(TextWriter sw, A2lRecordLayout r) =>
-        sw.WriteLine($"/begin RECORD_LAYOUT {r.Name} /end RECORD_LAYOUT");
+    private static void WriteRecordLayout(TextWriter sw, A2lRecordLayout r)
+    {
+        sw.Write("/begin RECORD_LAYOUT ");
+        sw.WriteLine(r.Name);
+        foreach (var entry in r.Entries)
+        {
+            sw.Write(' ');
+            sw.Write(entry.Keyword);
+            sw.Write(' ');
+            sw.Write(entry.Position);
+            sw.Write(' ');
+            if (!string.IsNullOrEmpty(entry.DataType)) sw.Write(entry.DataType);
+            sw.Write(' ');
+            if (!string.IsNullOrEmpty(entry.IndexMode)) sw.Write(entry.IndexMode);
+            sw.Write(' ');
+            if (!string.IsNullOrEmpty(entry.AddressingMode)) sw.Write(entry.AddressingMode);
+            sw.WriteLine();
+        }
+        sw.WriteLine("/end RECORD_LAYOUT");
+    }
 
-    private static void WriteGroup(TextWriter sw, A2lGroup g) =>
-        sw.WriteLine($"/begin GROUP {g.Name} /end GROUP");
+    private static void WriteGroup(TextWriter sw, A2lGroup g)
+    {
+        sw.Write("/begin GROUP ");
+        sw.Write(g.Name);
+        sw.Write(' ');
+        WriteEscapedString(sw, g.LongIdentifier);
+        if (g.IsRoot) sw.Write(" ROOT");
+        sw.WriteLine();
+        if (g.RefMeasurements.Count > 0)
+        {
+            sw.Write(" /begin REF_MEASUREMENT");
+            foreach (var r in g.RefMeasurements) { sw.Write(' '); sw.Write(r); }
+            sw.WriteLine(" /end REF_MEASUREMENT");
+        }
+        if (g.RefCharacteristics.Count > 0)
+        {
+            sw.Write(" /begin REF_CHARACTERISTIC");
+            foreach (var r in g.RefCharacteristics) { sw.Write(' '); sw.Write(r); }
+            sw.WriteLine(" /end REF_CHARACTERISTIC");
+        }
+        sw.WriteLine("/end GROUP");
+    }
 }

@@ -391,6 +391,61 @@ public class A2lDocumentWriterTests
         output.Should().NotContain("COEFFS");
     }
 
+    // v0.4 Task 5: WriteRecordLayout + WriteGroup full content.
+
+    [Fact]
+    public void Write_RecordLayoutWithEntries_EmitsAllEntries()
+    {
+        var rl = new A2lRecordLayout(
+            "RL1",
+            new List<RecordLayoutEntry>
+            {
+                new RecordLayoutEntry("FNC_VALUES", 1, "UBYTE", "COLUMN_DIR", "DIRECT"),
+                new RecordLayoutEntry("AXIS_PTS_X", 2, "UWORD", "INDEX_INCR", "DIRECT"),
+            },
+            new LineRange(0, 0));
+        var doc = new A2lDocument(
+            A2lVersion.V1_31, "P", "", "", null,
+            new List<A2lModule> { new A2lModule("M", "", new List<A2lMeasurement>(),
+                new List<A2lCharacteristic>(), new List<A2lAxisPts>(), new List<A2lCompuMethod>(),
+                new List<A2lRecordLayout> { rl }, new List<A2lGroup>(), null, new LineRange(0, 0)) },
+            "", 1);
+        using var sw = new StringWriter();
+        new A2lDocumentWriter().WriteToString(doc, sw);
+        var output = sw.ToString();
+        output.Should().Contain("RL1");
+        output.Should().Contain("FNC_VALUES");
+        output.Should().Contain("UBYTE");
+        output.Should().Contain("AXIS_PTS_X");
+        output.Should().Contain("INDEX_INCR");
+    }
+
+    [Fact]
+    public void Write_GroupWithRefs_EmitsRefBlocks()
+    {
+        var g = new A2lGroup(
+            "G1", "long id", true,
+            new List<string> { "meas1", "meas2" },
+            new List<string> { "ch1" },
+            new LineRange(0, 0));
+        var doc = new A2lDocument(
+            A2lVersion.V1_31, "P", "", "", null,
+            new List<A2lModule> { new A2lModule("M", "", new List<A2lMeasurement>(),
+                new List<A2lCharacteristic>(), new List<A2lAxisPts>(), new List<A2lCompuMethod>(),
+                new List<A2lRecordLayout>(), new List<A2lGroup> { g }, null, new LineRange(0, 0)) },
+            "", 1);
+        using var sw = new StringWriter();
+        new A2lDocumentWriter().WriteToString(doc, sw);
+        var output = sw.ToString();
+        output.Should().Contain("G1");
+        output.Should().Contain("ROOT");
+        output.Should().Contain("REF_MEASUREMENT");
+        output.Should().Contain("meas1");
+        output.Should().Contain("meas2");
+        output.Should().Contain("REF_CHARACTERISTIC");
+        output.Should().Contain("ch1");
+    }
+
     /// <summary>
     /// Test helper: runs WriteToString into a StringWriter and returns the produced text.
     /// Exposed as a public nested class so cross-file tests (BmsModelParserVerifyTests)
