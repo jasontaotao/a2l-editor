@@ -1,5 +1,7 @@
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using A2lEditor.App.Controls;
 using A2lEditor.App.Highlighting;
 using A2lEditor.App.ViewModels;
@@ -14,6 +16,9 @@ public partial class MainWindow : Window
     private A2lSyntaxHighlighter? _highlighter;
 
     public MainWindow() => InitializeComponent();
+
+    /// <summary>Current view model resolved from DataContext (null before DI wires it up).</summary>
+    private MainWindowViewModel? ViewModel => DataContext as MainWindowViewModel;
 
     protected override void OnSourceInitialized(EventArgs e)
     {
@@ -98,4 +103,55 @@ public partial class MainWindow : Window
             _vm?.JumpToLineCommand.Execute(ch.SourceLines.Start);
         }
     }
+
+    // --- v0.7 drag-and-drop ---------------------------------------------------
+    // 拖放事件从内层 DropTargetBorder 冒泡到 Window；处理器绑定在 Window 上。
+    // 判定逻辑抽到 ComputeDropEffects / TryGetDroppableA2lFile 两个纯方法便于单测
+    // （WPF 的 DragEventArgs 无公共构造器，无法直接在测试里构造）。
+
+    private void OnDragEnter(object sender, DragEventArgs e)
+    {
+        e.Effects = ComputeDropEffects(e.Data);
+        SetDropTargetVisualFeedback(e.Effects == DragDropEffects.Copy);
+        e.Handled = true;
+    }
+
+    private void OnDragOver(object sender, DragEventArgs e)
+    {
+        e.Effects = ComputeDropEffects(e.Data);
+        e.Handled = true;
+    }
+
+    private void OnDragLeave(object sender, DragEventArgs e)
+    {
+        SetDropTargetVisualFeedback(false);
+        e.Handled = true;
+    }
+
+    private void OnDrop(object sender, DragEventArgs e)
+    {
+        SetDropTargetVisualFeedback(false);
+        var a2lFile = TryGetDroppableA2lFile(e.Data);
+        if (a2lFile is null) return;
+        ViewModel?.OpenRecentCommand.Execute(a2lFile);
+        e.Handled = true;
+    }
+
+    /// <summary>Copy effect only for a FileDrop payload; otherwise None.</summary>
+    internal DragDropEffects ComputeDropEffects(IDataObject data)
+        => data.GetDataPresent(DataFormats.FileDrop)
+            ? DragDropEffects.Copy
+            : DragDropEffects.None;
+
+    /// <summary>First dropped path ending in <c>.a2l</c> (case-insensitive), or null.</summary>
+    internal string? TryGetDroppableA2lFile(IDataObject data)
+    {
+        if (!data.GetDataPresent(DataFormats.FileDrop)) return null;
+        if (data.GetData(DataFormats.FileDrop) is not string[] files) return null;
+        return files.FirstOrDefault(f =>
+            f.EndsWith(".a2l", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private void SetDropTargetVisualFeedback(bool active)
+        => DropTargetBorder.BorderBrush = active ? Brushes.DodgerBlue : Brushes.Transparent;
 }
