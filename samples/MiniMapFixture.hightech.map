@@ -1,0 +1,7 @@
+Linker script and memory map
+
+LOAD path/to/output.elf
+
+0x08000000 0x00000004 Battery_Voltage
+0x08000004 0x00000004 Cell_Temperature
+0x08000008 0x00000004 Pack_Current

@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <RootNamespace>A2lEditor.Reuse</RootNamespace>
+    <AssemblyName>A2lEditor.Reuse</AssemblyName>
+    <Nullable>enable</Nullable>
+    <LangVersion>12</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="ELFSharp" Version="2.17.3" />
+  </ItemGroup>
+  <!--
+    Linked legacy sources (read-only reference under D:\claude_proj2\src\ScriptTool\A2L_UpdateProj\).
+
+    The plan brief (Task 1, step 2) originally listed 3 files (MapSymbolTable.cs,
+    MapFormatDetector.cs, ElfParser.cs). On build attempt the third file
+    (ElfParser.cs) produced 14 CS8603/CS8618 nullable-reference-type errors
+    that cannot be silenced at the item level because TreatWarningsAsErrors
+    promotes them to errors, and the legacy project is read-only so the
+    nullable annotations cannot be fixed in place.
+
+    Investigation: ElfParser.cs is dead code in A2L_UpdateProj. Grep shows it
+    is referenced only by itself (no caller in A2L_UpdateProj uses ElfFileParser
+    or anything from the ElfParser namespace). The actual ELF reading path used
+    by MapSymbolTable.FromFile(MapFormat.ELF) is ELFSharp's ELFReader.Load —
+    see MapSymbolTable.cs lines 203-231 (ElfSymReader), which depends only on
+    MapSymbolTable.cs + ELFSharp 2.17.3. ElfParser.cs is therefore not on the
+    adapter's runtime call graph and is excluded from the link list.
+
+    Adapter dependency closure for v0.9 MAP/ELF: { MapSymbolTable.cs,
+    MapFormatDetector.cs } + ELFSharp 2.17.3 (NuGet). No source files from
+    the legacy project other than these two are consumed.
+  -->
+  <ItemGroup>
+    <Compile Include="D:\claude_proj2\src\ScriptTool\A2L_UpdateProj\MapSymbolTable.cs" Link="Linked\MapSymbolTable.cs" />
+    <Compile Include="D:\claude_proj2\src\ScriptTool\A2L_UpdateProj\MapFormatDetector.cs" Link="Linked\MapFormatDetector.cs" />
+  </ItemGroup>
+</Project>

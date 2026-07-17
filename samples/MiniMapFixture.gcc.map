@@ -1,0 +1,6 @@
+GNU ld (GNU Binutils) 2.40
+OUTPUT(elf32-littlearm output.elf)
+
+00800000 T Battery_Voltage
+00800004 T Cell_Temperature
+00800008 T Pack_Current
