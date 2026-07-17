@@ -38,6 +38,16 @@ public sealed class A2lDocumentWriter
             sw.Write(' ');
             sw.Write("BYTE_ORDER ");
             sw.WriteLine(doc.ModCommon.ByteOrder == A2lByteOrder.MSB_LAST ? "MSB_LAST" : "MSB_FIRST");
+            if (doc.ModCommon.DataSize.HasValue)
+            {
+                sw.Write(" DATA_SIZE ");
+                sw.WriteLine(doc.ModCommon.DataSize.Value);
+            }
+            if (doc.ModCommon.AlignmentByteOrder.HasValue)
+            {
+                sw.Write(" ALIGNMENT_BYTE_ORDER ");
+                sw.WriteLine(doc.ModCommon.AlignmentByteOrder.Value == A2lByteOrder.MSB_LAST ? "MSB_LAST" : "MSB_FIRST");
+            }
             sw.WriteLine("/end MOD_COMMON");
         }
 
@@ -87,6 +97,9 @@ public sealed class A2lDocumentWriter
         foreach (var cm in module.CompuMethods) WriteCompuMethod(sw, cm);
         foreach (var rl in module.RecordLayouts) WriteRecordLayout(sw, rl);
         foreach (var gr in module.Groups) WriteGroup(sw, gr);
+        foreach (var ad in module.AxisDescr) WriteAxisDescr(sw, ad);
+        foreach (var ur in module.UserRights) WriteUserRights(sw, ur);
+        foreach (var vi in module.VersionInfo) WriteVersionInfo(sw, vi);
 
         sw.WriteLine("/end MODULE");
     }
@@ -232,5 +245,52 @@ public sealed class A2lDocumentWriter
             sw.WriteLine(" /end REF_CHARACTERISTIC");
         }
         sw.WriteLine("/end GROUP");
+    }
+
+    private static void WriteAxisDescr(TextWriter sw, A2lAxisDescr a)
+    {
+        sw.Write("/begin AXIS_DESCR ");
+        WriteEscapedString(sw, a.Attribute);
+        sw.Write(' ');
+        if (!string.IsNullOrEmpty(a.InputQuantity)) sw.Write(a.InputQuantity);
+        sw.Write(' ');
+        if (!string.IsNullOrEmpty(a.Conversion)) sw.Write(a.Conversion);
+        sw.Write(' ');
+        sw.Write(a.MaxNumberOfAxisPoints);
+        sw.Write(' ');
+        sw.Write(a.LowerLimit);
+        sw.Write(' ');
+        sw.Write(a.UpperLimit);
+        sw.WriteLine();
+        sw.WriteLine("/end AXIS_DESCR");
+    }
+
+    private static void WriteUserRights(TextWriter sw, A2lUserRights u)
+    {
+        sw.Write("/begin USER_RIGHTS ");
+        WriteEscapedString(sw, u.UserId);
+        sw.Write(' ');
+        if (!string.IsNullOrEmpty(u.ReadAccess)) sw.Write(u.ReadAccess);
+        sw.Write(' ');
+        if (!string.IsNullOrEmpty(u.WriteAccess)) sw.Write(u.WriteAccess);
+        sw.Write(' ');
+        if (!string.IsNullOrEmpty(u.AccessMethod)) sw.Write(u.AccessMethod);
+        sw.WriteLine();
+        sw.WriteLine("/end USER_RIGHTS");
+    }
+
+    private static void WriteVersionInfo(TextWriter sw, A2lVersionInfo v)
+    {
+        sw.Write("/begin VERSION ");
+        sw.Write(' ');
+        if (!string.IsNullOrEmpty(v.VersionNo)) sw.Write(v.VersionNo);
+        sw.Write(' ');
+        if (v.Date != DateTime.MinValue) sw.Write(v.Date.ToString("yyyy-MM-dd"));
+        sw.Write(' ');
+        if (!string.IsNullOrEmpty(v.Vendor)) sw.Write(v.Vendor);
+        sw.Write(' ');
+        WriteEscapedString(sw, v.Description);
+        sw.WriteLine();
+        sw.WriteLine("/end VERSION");
     }
 }

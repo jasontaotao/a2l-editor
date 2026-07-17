@@ -450,6 +450,63 @@ public class A2lDocumentWriterTests
         output.Should().Contain("ch1");
     }
 
+    // v0.5 Task 4: WriteAxisDescr + WriteUserRights + WriteVersionInfo + MOD_COMMON sub-fields.
+
+    [Fact]
+    public void Write_AxisDescr_EmitsAllFields()
+    {
+        var ad = new A2lAxisDescr("CURVE_AXIS", "Time", "CM_Time", 100, "0", "1000",
+            new LineRange(0, 0));
+        var doc = new A2lDocument(
+            A2lVersion.V1_31, "P", "", "", null,
+            new List<A2lModule> { new A2lModule("M", "",
+                new List<A2lMeasurement>(), new List<A2lCharacteristic>(),
+                new List<A2lAxisPts>(), new List<A2lCompuMethod>(),
+                new List<A2lRecordLayout>(), new List<A2lGroup>(), null,
+                new List<A2lAxisDescr> { ad },
+                new List<A2lUserRights>(),
+                new List<A2lVersionInfo>(),
+                new LineRange(0, 0)) },
+            "", 1);
+        using var sw = new StringWriter();
+        new A2lDocumentWriter().WriteToString(doc, sw);
+        var output = sw.ToString();
+        output.Should().Contain("AXIS_DESCR");
+        output.Should().Contain("CURVE_AXIS");
+        output.Should().Contain("Time");
+        output.Should().Contain("CM_Time");
+        output.Should().Contain("100");
+        output.Should().Contain("/end AXIS_DESCR");
+    }
+
+    [Fact]
+    public void Write_ModCommonWithDataSize_EmitsDataSizeLine()
+    {
+        var doc = new A2lDocument(
+            A2lVersion.V1_31, "P", "", "",
+            new A2lModCommon("", A2lByteOrder.MSB_LAST, 32, null, new LineRange(0, 0)),
+            new List<A2lModule>(), "", 1);
+        using var sw = new StringWriter();
+        new A2lDocumentWriter().WriteToString(doc, sw);
+        var output = sw.ToString();
+        output.Should().Contain("DATA_SIZE");
+        output.Should().Contain("32");
+    }
+
+    [Fact]
+    public void Write_ModCommonWithAlignmentByteOrder_EmitsAlignmentByteOrderLine()
+    {
+        var doc = new A2lDocument(
+            A2lVersion.V1_31, "P", "", "",
+            new A2lModCommon("", A2lByteOrder.MSB_LAST, null, A2lByteOrder.MSB_FIRST, new LineRange(0, 0)),
+            new List<A2lModule>(), "", 1);
+        using var sw = new StringWriter();
+        new A2lDocumentWriter().WriteToString(doc, sw);
+        var output = sw.ToString();
+        output.Should().Contain("ALIGNMENT_BYTE_ORDER");
+        output.Should().Contain("MSB_FIRST");
+    }
+
     /// <summary>
     /// Test helper: runs WriteToString into a StringWriter and returns the produced text.
     /// Exposed as a public nested class so cross-file tests (BmsModelParserVerifyTests)
