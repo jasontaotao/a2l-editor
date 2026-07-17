@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 using A2lEditor.App.Controls;
 using A2lEditor.App.Highlighting;
 using A2lEditor.App.ViewModels;
@@ -16,7 +17,18 @@ public partial class MainWindow : Window
     private MainWindowViewModel? _vm;
     private A2lSyntaxHighlighter? _highlighter;
 
-    public MainWindow() => InitializeComponent();
+    // v0.7: Debounce tree rebuild on rapid editor typing.
+    // 200 ms quiet period coalesces a burst of TextChanged events into one RebuildTree call.
+    private readonly DispatcherTimer _debounceTimer;
+
+    public MainWindow()
+    {
+        InitializeComponent();
+        _debounceTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(200) };
+        _debounceTimer.Tick += OnDebounceTick;
+        TextEditor.Editor.TextChanged += OnEditorTextChanged;
+        Closing += (s, e) => _debounceTimer.Stop();
+    }
 
     /// <summary>Current view model resolved from DataContext (null before DI wires it up).</summary>
     private MainWindowViewModel? ViewModel => DataContext as MainWindowViewModel;
@@ -213,4 +225,20 @@ public partial class MainWindow : Window
 
     private void OnFormat(object sender, ExecutedRoutedEventArgs e)
         => MessageBox.Show("Format not implemented in v0.7 (planned for v0.8+).", "Format");
+
+    // --- v0.7 debounced tree rebuild ------------------------------------------
+    // Each TextChanged event restarts the 200 ms timer; if no further changes arrive
+    // before the tick, the tree is rebuilt exactly once.
+
+    private void OnEditorTextChanged(object? sender, EventArgs e)
+    {
+        _debounceTimer.Stop();
+        _debounceTimer.Start();
+    }
+
+    private void OnDebounceTick(object? sender, EventArgs e)
+    {
+        _debounceTimer.Stop();
+        if (ViewModel is not null) RebuildTree(ViewModel);
+    }
 }
