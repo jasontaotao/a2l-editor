@@ -1,4 +1,4 @@
-# a2l-editor v0.6
+# a2l-editor v0.7
 
 Desktop GUI + CLI for working with ASAP2 (`.a2l`) files.
 
@@ -25,24 +25,24 @@ The following functionality is implemented and covered by the current test suite
 - **`MOD_COMMON` `ALIGNMENT_OFFSET` sub-field** — parsed into a new nullable `A2lModCommon` field. Writer emits the optional line when non-null. Closes 1 v0.5 deferred item.
 - **`VERSION` duplicate block detection** — `A2lValidator` errors on duplicate `VERSION` blocks in a module. Closes 1 v0.5 deferred item.
 - **`MOD_PAR` / `MOD_COMMON` truly-multi-line output** — Writer now emits PROJECT / HEADER / MODULE / MOD_PAR / MOD_COMMON with the helper that emits strings verbatim when they contain newlines (escape-style when single-line). Lock test `BmsModel_RoundTrip_PreservesCommentsAndNoNewlines` confirms zero `\n` drift for BmsModel. Closes 1 v0.5 deferred item.
+- **Drag-and-drop file open** — drag `.a2l` files from File Explorer onto the MainWindow to open them; visual feedback (DodgerBlue border) during drag-over. Closes 1 v0.6 deferred item.
+- **Full menu (Edit / View / Tools / Help)** — 5 top-level menus with 20 sub-items (File: 6 + Edit: 7 + View: 4 + Tools: 2 + Help: 1). Undo/Redo/Find/Format are stub-only ("Not implemented in v0.7"). Closes 1 v0.6 deferred item.
+- **Debounce tree rebuild on text change** — `DispatcherTimer(200ms)` prevents excessive tree rebuilds when typing rapidly; tree rebuilds once after 200ms of no further text changes. Closes 1 v0.6 deferred item.
 
 ## Tests
 
-107 passing + 0 skip across 3 test projects:
+116 passing + 0 skip across 3 test projects:
 
 - `A2lEditor.Core.Tests` — 87 (Parser / Lexer / Writer / Validator / TokenClassifier / RecentFilesStore + MOD_PAR/MOD_COMMON + StringLiteralEscaper + full Writer content + AXIS_DESCR/USER_RIGHTS/VERSION + MOD_COMMON sub-fields + multi-line verify + AXIS_PTS_X/INDEX_INCR/INDEX_DECR + ALIGNMENT_OFFSET + VERSION duplicate)
-- `A2lEditor.App.Tests` — 14 (ViewModel + A2lTextEditor navigation, unchanged from v0.2)
+- `A2lEditor.App.Tests` — 23 (14 baseline from v0.2 + 9 new in v0.7: drag-and-drop 4 + menu 3 + debounce 2; note implementer deviations — drag-drop landed 4 tests not 3, no `[StaFact]` pattern used, `OpenRecent` stays synchronous not async). App tests run with `parallelizeTestCollections: false` (via `xunit.runner.json`) to avoid a WPF `PackagePart` resource-loader race.
 - `A2lEditor.IntegrationTests` — 6 (CLI validate exit codes 0/1/2 + BmsModel 0-warnings acceptance + BmsModel full round-trip semantic equality + BmsModel multi-line lock)
 
-## Deferred to v0.6+
+## Deferred to v0.8+
 
-The following are intentionally not claimed as v0.6 functionality:
+The following are intentionally not claimed as v0.7 functionality:
 
-- Drag-and-drop file open
-- Full menu (Edit / View / Tools / Help)
 - Custom `UtfUnknown` package integration
 - Coverage threshold enforcement (parse coverage.cobertura.xml)
-- Debounce tree rebuild on text change
 - Byte-for-byte round-trip fidelity (whitespace / comment / format order)
 - MAP/ELF alignment (planned as v0.2 core feature in original spec; deferred)
 - Excel import → A2L skeleton generation
@@ -63,7 +63,7 @@ The following are intentionally not claimed as v0.6 functionality:
 # Build
 dotnet build a2l-editor.sln -c Release
 
-# Run all tests (107 PASS + 0 SKIP expected)
+# Run all tests (116 PASS + 0 SKIP expected)
 dotnet test a2l-editor.sln --nologo
 
 # Launch the WPF GUI
@@ -100,6 +100,7 @@ See [docs/architecture.md](docs/architecture.md) for the high-level architecture
 - [Plan v0.4](docs/superpowers/plans/2026-07-17-a2l-editor-v0-4-roundtrip.md)
 - [Plan v0.5](docs/superpowers/plans/2026-07-17-a2l-editor-v0-5-parser-followup.md)
 - [Plan v0.6](docs/superpowers/plans/2026-07-17-a2l-editor-v0-6-parser-followup.md)
+- [Plan v0.7](docs/superpowers/plans/2026-07-17-a2l-editor-v0-7-ui-trio.md)
 
 ## License
 
