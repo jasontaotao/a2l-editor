@@ -57,8 +57,6 @@ public partial class MainWindow : Window
         }
     }
 
-    private void ExitMenuItem_Click(object sender, RoutedEventArgs e) => Close();
-
     private void RebuildTree(MainWindowViewModel vm)
     {
         ModuleTree.Items.Clear();
@@ -156,48 +154,63 @@ public partial class MainWindow : Window
     private void SetDropTargetVisualFeedback(bool active)
         => DropTargetBorder.BorderBrush = active ? Brushes.DodgerBlue : Brushes.Transparent;
 
-    // --- v0.7 menu command handlers (stubs; real impl in Task 3) ---------------
-    // Empty stubs keep the XAML CommandBindings referenced in Task 2 from
-    // raising XLS0113 missing-handler errors. Task 3 replaces these bodies
-    // with the real implementation.
+    // --- v0.7 menu command handlers -------------------------------------------
+    // Thin View-layer handlers: file/validate ops delegate to the ViewModel;
+    // editor ops (cut/copy/paste/zoom) target the inner AvalonEdit (TextEditor.Editor);
+    // unimplemented v0.8+ features surface a MessageBox placeholder.
 
-    private void OnNew(object sender, ExecutedRoutedEventArgs e) { }
+    private void OnNew(object sender, ExecutedRoutedEventArgs e) => ViewModel?.NewFile();
 
-    private void OnOpen(object sender, ExecutedRoutedEventArgs e) { }
+    private void OnOpen(object sender, ExecutedRoutedEventArgs e)
+        => ViewModel?.OpenCommand.Execute(null);
 
-    private void OnSave(object sender, ExecutedRoutedEventArgs e) { }
+    private void OnSave(object sender, ExecutedRoutedEventArgs e)
+        => ViewModel?.SaveCommand.Execute(null);
 
     private void OnSave_CanExecute(object sender, CanExecuteRoutedEventArgs e)
-        => e.CanExecute = false;
+        => e.CanExecute = ViewModel?.IsDirty ?? false;
 
-    private void OnSaveAs(object sender, ExecutedRoutedEventArgs e) { }
+    private void OnSaveAs(object sender, ExecutedRoutedEventArgs e)
+    {
+        if (ViewModel is null) return;
+        var path = ViewModel.OpenSaveAsDialog();
+        if (path is not null) ViewModel.SaveAs(path);
+    }
 
     private void OnSaveAs_CanExecute(object sender, CanExecuteRoutedEventArgs e)
-        => e.CanExecute = false;
+        => e.CanExecute = ViewModel?.IsFileOpen ?? false;
 
-    private void OnExit(object sender, ExecutedRoutedEventArgs e) { }
+    private void OnExit(object sender, ExecutedRoutedEventArgs e) => Close();
 
-    private void OnUndo(object sender, ExecutedRoutedEventArgs e) { }
+    private void OnUndo(object sender, ExecutedRoutedEventArgs e)
+        => MessageBox.Show("Undo not implemented in v0.7 (planned for v0.8+).", "Undo");
 
-    private void OnRedo(object sender, ExecutedRoutedEventArgs e) { }
+    private void OnRedo(object sender, ExecutedRoutedEventArgs e)
+        => MessageBox.Show("Redo not implemented in v0.7 (planned for v0.8+).", "Redo");
 
-    private void OnCut(object sender, ExecutedRoutedEventArgs e) { }
+    private void OnCut(object sender, ExecutedRoutedEventArgs e) => TextEditor.Editor.Cut();
 
-    private void OnCopy(object sender, ExecutedRoutedEventArgs e) { }
+    private void OnCopy(object sender, ExecutedRoutedEventArgs e) => TextEditor.Editor.Copy();
 
-    private void OnPaste(object sender, ExecutedRoutedEventArgs e) { }
+    private void OnPaste(object sender, ExecutedRoutedEventArgs e) => TextEditor.Editor.Paste();
 
-    private void OnFind(object sender, ExecutedRoutedEventArgs e) { }
+    private void OnFind(object sender, ExecutedRoutedEventArgs e)
+        => MessageBox.Show("Find dialog not implemented in v0.7 (planned for v0.8+).", "Find");
 
-    private void OnZoomIn(object sender, ExecutedRoutedEventArgs e) { }
+    private void OnZoomIn(object sender, ExecutedRoutedEventArgs e)
+        => TextEditor.Editor.FontSize = Math.Min(TextEditor.Editor.FontSize + 2, 32);
 
-    private void OnZoomOut(object sender, ExecutedRoutedEventArgs e) { }
+    private void OnZoomOut(object sender, ExecutedRoutedEventArgs e)
+        => TextEditor.Editor.FontSize = Math.Max(TextEditor.Editor.FontSize - 2, 8);
 
-    private void OnResetZoom(object sender, ExecutedRoutedEventArgs e) { }
+    private void OnResetZoom(object sender, ExecutedRoutedEventArgs e)
+        => TextEditor.Editor.FontSize = 12;
 
-    private void OnAbout(object sender, ExecutedRoutedEventArgs e) { }
+    private void OnAbout(object sender, ExecutedRoutedEventArgs e)
+        => MessageBox.Show("a2l-editor v0.7\n\nASAP2 (.a2l) GUI + CLI editor.", "About");
 
-    private void OnValidate(object sender, ExecutedRoutedEventArgs e) { }
+    private void OnValidate(object sender, ExecutedRoutedEventArgs e) => ViewModel?.Validate();
 
-    private void OnFormat(object sender, ExecutedRoutedEventArgs e) { }
+    private void OnFormat(object sender, ExecutedRoutedEventArgs e)
+        => MessageBox.Show("Format not implemented in v0.7 (planned for v0.8+).", "Format");
 }

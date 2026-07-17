@@ -3,6 +3,7 @@ using System.IO;
 using A2lEditor.Core.Parsing;
 using A2lEditor.Core.RecentFiles;
 using A2lEditor.Core.Serialization;
+using A2lEditor.Core.Validation;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -26,6 +27,9 @@ public partial class MainWindowViewModel : ObservableObject
     [ObservableProperty] private string _recentFilesStatusMessage = "";
 
     public event Action<int>? NavigateToLineRequested;
+
+    /// <summary>True when a file path is set (used to gate Save As / file-scoped commands).</summary>
+    public bool IsFileOpen => !string.IsNullOrEmpty(FilePath);
 
     public MainWindowViewModel(IDialogService dialog) : this(dialog, new RecentFilesStore()) { }
 
@@ -104,6 +108,54 @@ public partial class MainWindowViewModel : ObservableObject
         }
     }
 
+    /// <summary>Reset to an empty (no-file) state. v0.7 stub: clears the file path only.</summary>
+    public void NewFile()
+    {
+        FilePath = "";
+        // Future: clear editor + reset document state. v0.7 stub.
+    }
+
+    /// <summary>Save the current text to <paramref name="path"/> and adopt it as the file path.</summary>
+    public void SaveAs(string path)
+    {
+        if (string.IsNullOrEmpty(path)) return;
+        var result = Asap131Parser.ParseText(RawText);
+        UpdateParseErrors(result);
+        if (result.HasFatalErrors || result.Value is null)
+        {
+            _dialog.ShowError("Cannot save",
+                "Parse failed:\n" + string.Join("\n", result.Errors.Select(e => e.Message)));
+            return;
+        }
+        new A2lDocumentWriter().WriteToFile(result.Value, path);
+        FilePath = path;
+        IsDirty = false;
+        StatusMessage = $"Saved as {Path.GetFileName(path)} at {DateTime.Now:HH:mm:ss}";
+    }
+
+    /// <summary>Re-run semantic validation over the current text and surface findings in the error list.</summary>
+    public void Validate()
+    {
+        var result = Asap131Parser.ParseText(RawText);
+        if (result.HasFatalErrors || result.Value is null)
+        {
+            UpdateParseErrors(result);
+            return;
+        }
+        var errors = new A2lValidator().Validate(result.Value);
+        SetParseErrors(errors);
+        StatusMessage = $"Validated: {errors.Count} issue(s)";
+    }
+
+    /// <summary>Prompt for a Save-As destination via the dialog service. Returns null if cancelled.</summary>
+    public string? OpenSaveAsDialog()
+    {
+        var defaultName = string.IsNullOrEmpty(FilePath)
+            ? "untitled.a2l"
+            : Path.GetFileName(FilePath);
+        return _dialog.SaveA2lFile(defaultName);
+    }
+
     private void LoadFromPath(string path)
     {
         var result = Asap131Parser.ParseFile(path);
@@ -137,6 +189,13 @@ public partial class MainWindowViewModel : ObservableObject
     {
         ParseErrors.Clear();
         foreach (var e in result.Errors) ParseErrors.Add(e);
+        ErrorCount = ParseErrors.Count;
+    }
+
+    private void SetParseErrors(IReadOnlyList<ParseError> errors)
+    {
+        ParseErrors.Clear();
+        foreach (var e in errors) ParseErrors.Add(e);
         ErrorCount = ParseErrors.Count;
     }
 
