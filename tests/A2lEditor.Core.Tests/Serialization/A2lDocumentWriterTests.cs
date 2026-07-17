@@ -323,6 +323,74 @@ public class A2lDocumentWriterTests
         output.Should().Contain("100");
     }
 
+    // v0.4 Task 4: WriteAxisPts + WriteCompuMethod full content.
+
+    [Fact]
+    public void Write_AxisPtsWithAllFields_PreservesInputQuantityAndCompuMethod()
+    {
+        var ap = new A2lAxisPts(
+            "ap1", "long id", "Scalar_UWORD", 0x3000, "input_qty", "CM_ap", 5, "0", "100",
+            new LineRange(0, 0));
+        var doc = new A2lDocument(
+            A2lVersion.V1_31, "P", "", "", null,
+            new List<A2lModule> { new A2lModule("M", "", new List<A2lMeasurement>(),
+                new List<A2lCharacteristic>(), new List<A2lAxisPts> { ap }, new List<A2lCompuMethod>(),
+                new List<A2lRecordLayout>(), new List<A2lGroup>(), null, new LineRange(0, 0)) },
+            "", 1);
+        using var sw = new StringWriter();
+        new A2lDocumentWriter().WriteToString(doc, sw);
+        var output = sw.ToString();
+        output.Should().Contain("ap1");
+        output.Should().Contain("Scalar_UWORD");
+        output.Should().Contain("3000");
+        output.Should().Contain("input_qty");
+        output.Should().Contain("CM_ap");
+        output.Should().Contain("5");
+    }
+
+    [Fact]
+    public void Write_CompuMethodWithCoeffs_IncludesCoeffsLine()
+    {
+        var cm = new A2lCompuMethod(
+            "CM1", "long id", "RAT_FUNC", "%3.2", "V", 1.0, 2.0, 0.0, 0.0, 0.0, 0.0,
+            new LineRange(0, 0));
+        var doc = new A2lDocument(
+            A2lVersion.V1_31, "P", "", "", null,
+            new List<A2lModule> { new A2lModule("M", "", new List<A2lMeasurement>(),
+                new List<A2lCharacteristic>(), new List<A2lAxisPts>(), new List<A2lCompuMethod> { cm },
+                new List<A2lRecordLayout>(), new List<A2lGroup>(), null, new LineRange(0, 0)) },
+            "", 1);
+        using var sw = new StringWriter();
+        new A2lDocumentWriter().WriteToString(doc, sw);
+        var output = sw.ToString();
+        output.Should().Contain("CM1");
+        output.Should().Contain("RAT_FUNC");
+        output.Should().Contain("V");
+        output.Should().Contain("COEFFS");
+        output.Should().Contain("1");
+        output.Should().Contain("2");
+    }
+
+    [Fact]
+    public void Write_CompuMethodIdentical_OmitsCoeffsLine()
+    {
+        var cm = new A2lCompuMethod(
+            "CM_Identical", "long id", "IDENTICAL", "", "", 0, 0, 0, 0, 0, 0,
+            new LineRange(0, 0));
+        var doc = new A2lDocument(
+            A2lVersion.V1_31, "P", "", "", null,
+            new List<A2lModule> { new A2lModule("M", "", new List<A2lMeasurement>(),
+                new List<A2lCharacteristic>(), new List<A2lAxisPts>(), new List<A2lCompuMethod> { cm },
+                new List<A2lRecordLayout>(), new List<A2lGroup>(), null, new LineRange(0, 0)) },
+            "", 1);
+        using var sw = new StringWriter();
+        new A2lDocumentWriter().WriteToString(doc, sw);
+        var output = sw.ToString();
+        output.Should().Contain("CM_Identical");
+        output.Should().Contain("IDENTICAL");
+        output.Should().NotContain("COEFFS");
+    }
+
     /// <summary>
     /// Test helper: runs WriteToString into a StringWriter and returns the produced text.
     /// Exposed as a public nested class so cross-file tests (BmsModelParserVerifyTests)

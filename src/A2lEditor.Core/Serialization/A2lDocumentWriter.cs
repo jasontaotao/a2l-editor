@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using A2lEditor.Core.Model;
 
@@ -135,11 +136,59 @@ public sealed class A2lDocumentWriter
         sw.WriteLine("/end CHARACTERISTIC");
     }
 
-    private static void WriteAxisPts(TextWriter sw, A2lAxisPts a) =>
-        sw.WriteLine($"/begin AXIS_PTS {a.Name} /end AXIS_PTS");
+    private static void WriteAxisPts(TextWriter sw, A2lAxisPts a)
+    {
+        sw.Write("/begin AXIS_PTS ");
+        sw.Write(a.Name);
+        sw.Write(' ');
+        WriteEscapedString(sw, a.LongIdentifier);
+        sw.Write(' ');
+        if (!string.IsNullOrEmpty(a.RecordLayout)) sw.Write(a.RecordLayout);
+        sw.Write(' ');
+        if (a.EcuAddress != 0) sw.Write(a.EcuAddress.ToString("X"));
+        sw.Write(' ');
+        if (!string.IsNullOrEmpty(a.InputQuantity)) sw.Write(a.InputQuantity);
+        sw.Write(' ');
+        if (!string.IsNullOrEmpty(a.CompuMethod)) sw.Write(a.CompuMethod);
+        sw.Write(' ');
+        sw.Write(a.NumberOfAxisPts);
+        sw.Write(' ');
+        sw.Write(a.LowerLimit);
+        sw.Write(' ');
+        sw.Write(a.UpperLimit);
+        sw.WriteLine();
+        sw.WriteLine("/end AXIS_PTS");
+    }
 
-    private static void WriteCompuMethod(TextWriter sw, A2lCompuMethod c) =>
-        sw.WriteLine($"/begin COMPU_METHOD {c.Name} /end COMPU_METHOD");
+    private static void WriteCompuMethod(TextWriter sw, A2lCompuMethod c)
+    {
+        sw.Write("/begin COMPU_METHOD ");
+        sw.Write(c.Name);
+        sw.Write(' ');
+        WriteEscapedString(sw, c.LongIdentifier);
+        sw.Write(' ');
+        if (!string.IsNullOrEmpty(c.ConversionType)) sw.Write(c.ConversionType);
+        sw.Write(' ');
+        WriteEscapedString(sw, c.Format);
+        sw.Write(' ');
+        WriteEscapedString(sw, c.Unit);
+        sw.WriteLine();
+        if (!string.IsNullOrEmpty(c.ConversionType) &&
+            c.ConversionType != "IDENTICAL" &&
+            c.ConversionType != "TAB_NOINTP" &&
+            c.ConversionType != "TAB_VERB")
+        {
+            sw.Write(" COEFFS ");
+            sw.Write(c.CoeffA.ToString(CultureInfo.InvariantCulture));
+            sw.Write(' '); sw.Write(c.CoeffB.ToString(CultureInfo.InvariantCulture));
+            sw.Write(' '); sw.Write(c.CoeffC.ToString(CultureInfo.InvariantCulture));
+            sw.Write(' '); sw.Write(c.CoeffD.ToString(CultureInfo.InvariantCulture));
+            sw.Write(' '); sw.Write(c.CoeffE.ToString(CultureInfo.InvariantCulture));
+            sw.Write(' '); sw.Write(c.CoeffF.ToString(CultureInfo.InvariantCulture));
+            sw.WriteLine();
+        }
+        sw.WriteLine("/end COMPU_METHOD");
+    }
 
     private static void WriteRecordLayout(TextWriter sw, A2lRecordLayout r) =>
         sw.WriteLine($"/begin RECORD_LAYOUT {r.Name} /end RECORD_LAYOUT");
