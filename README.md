@@ -1,4 +1,4 @@
-# a2l-editor v0.7
+# a2l-editor v0.8
 
 Desktop GUI + CLI for working with ASAP2 (`.a2l`) files.
 
@@ -28,25 +28,26 @@ The following functionality is implemented and covered by the current test suite
 - **Drag-and-drop file open** — drag `.a2l` files from File Explorer onto the MainWindow to open them; visual feedback (DodgerBlue border) during drag-over. Closes 1 v0.6 deferred item.
 - **Full menu (Edit / View / Tools / Help)** — 5 top-level menus with 20 sub-items (File: 6 + Edit: 7 + View: 4 + Tools: 2 + Help: 1). Undo/Redo/Find/Format are stub-only ("Not implemented in v0.7"). Closes 1 v0.6 deferred item.
 - **Debounce tree rebuild on text change** — `DispatcherTimer(200ms)` prevents excessive tree rebuilds when typing rapidly; tree rebuilds once after 200ms of no further text changes. Closes 1 v0.6 deferred item.
+- **`UtfUnknown` BOM detection at file open** — `A2lDocument.LoadFromFile` auto-detects UTF-8 / UTF-16 LE/BE / UTF-32 via UtfUnknown NuGet; ASCII upgrades to UTF-8; BOM stripped before parser handoff to keep `RawText` BOM-free. Closes 1 v0.7 deferred item.
+- **Coverage threshold enforcement** — `coverlet.collector` produces Cobertura XML; `CoberturaReport` parser + `verify-coverage.ps1` enforces 80% line / 70% branch gate. Pre-commit hook at `scripts/pre-commit` runs the gate before every commit. Closes 1 v0.7 deferred item.
+- **Byte-for-byte round-trip fidelity** — `A2lDocumentWriter` prioritizes `doc.RawText` emit when the parser ran on the same file; 1:1 read→save preserves the original source byte-for-byte (no whitespace / comment / format drift). Closes 1 v0.7 deferred item.
 
 ## Tests
 
-116 passing + 0 skip across 3 test projects:
+126 passing + 0 skip across 3 test projects:
 
-- `A2lEditor.Core.Tests` — 87 (Parser / Lexer / Writer / Validator / TokenClassifier / RecentFilesStore + MOD_PAR/MOD_COMMON + StringLiteralEscaper + full Writer content + AXIS_DESCR/USER_RIGHTS/VERSION + MOD_COMMON sub-fields + multi-line verify + AXIS_PTS_X/INDEX_INCR/INDEX_DECR + ALIGNMENT_OFFSET + VERSION duplicate)
-- `A2lEditor.App.Tests` — 23 (14 baseline from v0.2 + 9 new in v0.7: drag-and-drop 4 + menu 3 + debounce 2; note implementer deviations — drag-drop landed 4 tests not 3, no `[StaFact]` pattern used, `OpenRecent` stays synchronous not async). App tests run with `parallelizeTestCollections: false` (via `xunit.runner.json`) to avoid a WPF `PackagePart` resource-loader race.
-- `A2lEditor.IntegrationTests` — 6 (CLI validate exit codes 0/1/2 + BmsModel 0-warnings acceptance + BmsModel full round-trip semantic equality + BmsModel multi-line lock)
+- `A2lEditor.Core.Tests` — 97 (v0.7's 87 + 10 new in v0.8: 7 `A2lDocument.LoadFromFile` BOM-detection cases + 3 `CoberturaReport` parser cases)
+- `A2lEditor.App.Tests` — 23 (unchanged from v0.7; 14 baseline from v0.2 + 9 new in v0.7: drag-and-drop 4 + menu 3 + debounce 2; note implementer deviations — drag-drop landed 4 tests not 3, no `[StaFact]` pattern used, `OpenRecent` stays synchronous not async). App tests run with `parallelizeTestCollections: false` (via `xunit.runner.json`) to avoid a WPF `PackagePart` resource-loader race.
+- `A2lEditor.IntegrationTests` — 6 (CLI validate exit codes 0/1/2 + BmsModel 0-warnings acceptance + BmsModel full round-trip semantic equality + BmsModel multi-line lock + BmsModel byte-for-byte round-trip equality)
 
-## Deferred to v0.8+
+## Deferred to v0.9+
 
-The following are intentionally not claimed as v0.7 functionality:
+The following are intentionally not claimed as v0.8 functionality:
 
-- Custom `UtfUnknown` package integration
-- Coverage threshold enforcement (parse coverage.cobertura.xml)
-- Byte-for-byte round-trip fidelity (whitespace / comment / format order)
 - MAP/ELF alignment (planned as v0.2 core feature in original spec; deferred)
 - Excel import → A2L skeleton generation
 - A2L merge / diff
+- XML/JSON serialization of `A2lDocument` (alternative to A2L text)
 
 ## Tech stack
 
@@ -63,7 +64,7 @@ The following are intentionally not claimed as v0.7 functionality:
 # Build
 dotnet build a2l-editor.sln -c Release
 
-# Run all tests (116 PASS + 0 SKIP expected)
+# Run all tests (126 PASS + 0 SKIP expected)
 dotnet test a2l-editor.sln --nologo
 
 # Launch the WPF GUI
@@ -74,6 +75,17 @@ dotnet src/A2lEditor.Cli/bin/Release/net8.0/a2l-editor.dll validate samples/BmsM
 ```
 
 A self-contained Windows x64 executable (~65 MB) is produced at `publish/a2l-editor.exe` by `scripts/package.ps1` (or `dotnet publish` directly — see `scripts/package.ps1` body).
+
+## Pre-commit hook (coverage gate)
+
+Install the coverage-gate pre-commit hook to fail commits that drop line coverage below 80% or branch coverage below 70%:
+
+```bash
+cp scripts/pre-commit .git/hooks/pre-commit
+chmod +x .git/hooks/pre-commit
+```
+
+The hook invokes `scripts/verify-coverage.ps1` against the most recent `coverage.cobertura.xml` produced by `dotnet test --collect:"XPlat Code Coverage"`. Skip with `git commit --no-verify` when needed.
 
 # Validate an A2L file with the CLI
 dotnet run --project src/A2lEditor.Cli -- validate samples/BmsModel.a2l
@@ -101,6 +113,7 @@ See [docs/architecture.md](docs/architecture.md) for the high-level architecture
 - [Plan v0.5](docs/superpowers/plans/2026-07-17-a2l-editor-v0-5-parser-followup.md)
 - [Plan v0.6](docs/superpowers/plans/2026-07-17-a2l-editor-v0-6-parser-followup.md)
 - [Plan v0.7](docs/superpowers/plans/2026-07-17-a2l-editor-v0-7-ui-trio.md)
+- [Plan v0.8](docs/superpowers/plans/2026-07-17-a2l-editor-v0-8-tooling.md)
 
 ## License
 
