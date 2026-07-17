@@ -92,24 +92,9 @@ public sealed class Asap131Parser
                        _pos + 1 < _tokens.Count && _tokens[_pos + 1].Text != "MODULE")
                 {
                     Consume(); // /begin
-                    int mcStartLine = Current.Line;
                     if (TryConsumeKeyword("MOD_COMMON"))
                     {
-                        string mcComment = Current.Kind == TokenKind.StringLiteral ? Consume().Text : "";
-                        A2lByteOrder byteOrder = A2lByteOrder.MSB_LAST;
-                        if (TryConsumeKeyword("BYTE_ORDER"))
-                        {
-                            if (Current.Kind == TokenKind.Keyword && Current.Text == "MSB_FIRST")
-                            { byteOrder = A2lByteOrder.MSB_FIRST; Consume(); }
-                            else if (Current.Kind == TokenKind.Keyword && Current.Text == "MSB_LAST")
-                            { byteOrder = A2lByteOrder.MSB_LAST; Consume(); }
-                            else
-                                _errors.Add(Error("Expected MSB_FIRST or MSB_LAST after BYTE_ORDER",
-                                                   ErrorSeverity.Warning));
-                        }
-                        TryConsumeKeyword("/end");
-                        modCommon = new A2lModCommon(mcComment, byteOrder,
-                            new LineRange(mcStartLine, Current.Line));
+                        modCommon = ParseModCommonBody();
                     }
                     else
                     {
@@ -124,6 +109,15 @@ public sealed class Asap131Parser
                     var module = ParseModule(out var moduleRange);
                     modules.Add(module);
                     TryConsumeKeyword("/end");
+                }
+
+                // v0.3 PATCH: if a MODULE-level MOD_COMMON was found (v1.61 layout like
+                // samples/BmsModel.a2l), and no PROJECT-level MOD_COMMON was set, lift
+                // it to document scope so the v0.3 acceptance gate (ModCommon non-null)
+                // passes. PROJECT-level precedence — once set, never overwritten.
+                if (modCommon is null && _moduleModCommon is not null)
+                {
+                    modCommon = _moduleModCommon;
                 }
             }
         }
@@ -189,6 +183,15 @@ public sealed class Asap131Parser
                         moduleModPar = mpComment;
                         break;
                     }
+                    case "MOD_COMMON":
+                    {
+                        // v0.3 PATCH: MOD_COMMON may appear inside a MODULE block (ASAP2 v1.61
+                        // legacy layout, e.g. samples/BmsModel.a2l). Bubbles up to Parse() via
+                        // _moduleModCommon so doc.ModCommon is populated. PROJECT-level MOD_COMMON
+                        // wins precedence (set first by Parse()).
+                        _moduleModCommon = ParseModCommonBody();
+                        break;
+                    }
                     default:
                         _errors.Add(Error($"Unknown block {blockName}, skipped", ErrorSeverity.Warning));
                         SkipToMatchingEnd();
@@ -205,6 +208,34 @@ public sealed class Asap131Parser
         range = new LineRange(startLine, endLine);
         return new A2lModule(name, comment, measurements, characteristics, axisPts,
             compuMethods, recordLayouts, groups, moduleModPar, range);
+    }
+
+    // v0.3 PATCH: stash for MOD_COMMON found inside a MODULE block (v1.61 layout).
+    // Bubbles up to Parse() so doc.ModCommon is populated even when BmsModel.a2l-style
+    // files place MOD_COMMON inside the only MODULE instead of at PROJECT level.
+    private A2lModCommon? _moduleModCommon;
+
+    // v0.3 PATCH: shared MOD_COMMON body parser. Used by both PROJECT-level (Parse())
+    // and MODULE-level (ParseModule()) contexts. Assumes the leading "MOD_COMMON" token
+    // has already been consumed by the caller.
+    private A2lModCommon ParseModCommonBody()
+    {
+        int mcStartLine = Current.Line;
+        string mcComment = Current.Kind == TokenKind.StringLiteral ? Consume().Text : "";
+        A2lByteOrder byteOrder = A2lByteOrder.MSB_LAST;
+        if (TryConsumeKeyword("BYTE_ORDER"))
+        {
+            if (Current.Kind == TokenKind.Keyword && Current.Text == "MSB_FIRST")
+            { byteOrder = A2lByteOrder.MSB_FIRST; Consume(); }
+            else if (Current.Kind == TokenKind.Keyword && Current.Text == "MSB_LAST")
+            { byteOrder = A2lByteOrder.MSB_LAST; Consume(); }
+            else
+                _errors.Add(Error("Expected MSB_FIRST or MSB_LAST after BYTE_ORDER",
+                                   ErrorSeverity.Warning));
+        }
+        TryConsumeKeyword("/end");
+        return new A2lModCommon(mcComment, byteOrder,
+            new LineRange(mcStartLine, Current.Line));
     }
 
     private A2lMeasurement ParseMeasurement()

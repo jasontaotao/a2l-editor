@@ -1,5 +1,7 @@
+using System.IO;
 using A2lEditor.Core.Model;
 using A2lEditor.Core.Parsing;
+using A2lEditor.Core.Serialization;
 using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
@@ -231,5 +233,25 @@ public class Asap131ParserTests
         result.Value!.ModCommon.Should().NotBeNull();
         result.Value!.ModCommon!.ByteOrder.Should().Be(A2lByteOrder.MSB_LAST,
             "ASAP2 1.31 spec default is MSB_LAST when BYTE_ORDER is omitted");
+    }
+
+    [Fact]
+    public void Writer_RoundTrip_BmsModel_PreservesModParAndModCommon()
+    {
+        var path = Path.Combine(
+            AppContext.BaseDirectory, "..", "..", "..", "..", "..",
+            "samples", "BmsModel.a2l");
+        var doc = Asap131Parser.ParseFile(path).Value;
+        doc.Should().NotBeNull("BmsModel.a2l must parse");
+        doc!.ModCommon.Should().NotBeNull();
+        doc.ModCommon!.ByteOrder.Should().Be(A2lByteOrder.MSB_LAST);
+
+        using var sw = new StringWriter();
+        new A2lDocumentWriter().WriteToString(doc, sw);
+        var reParsed = Asap131Parser.ParseText(sw.ToString()).Value;
+        reParsed.Should().NotBeNull();
+        reParsed!.ModCommon.Should().NotBeNull();
+        reParsed.ModCommon!.ByteOrder.Should().Be(doc.ModCommon.ByteOrder);
+        reParsed.Modules[0].ModPar.Should().Be(doc.Modules[0].ModPar);
     }
 }
