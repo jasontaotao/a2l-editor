@@ -1,3 +1,4 @@
+using A2lEditor.Core.Model;
 using A2lEditor.Core.Parsing;
 using FluentAssertions;
 using Xunit;
@@ -198,5 +199,37 @@ public class Asap131ParserTests
         result.Value!.Modules[0].Measurements.Should().HaveCount(1,
             "MEASUREMENT after skipped UNKNOWN_X block must be parsed correctly (verify-bug.md Risks #1)");
         result.Value!.Modules[0].Measurements[0].Name.Should().Be("meas1");
+    }
+
+    [Fact]
+    public void Parse_ProjectWithModCommon_StoresModCommonAndByteOrder()
+    {
+        const string text = "ASAP2_VERSION 1 31\n"
+            + "/begin PROJECT P \"\"\n"
+            + " /begin MOD_COMMON \"common comment\" BYTE_ORDER MSB_LAST /end MOD_COMMON\n"
+            + " /begin MODULE M \"\" /end MODULE\n"
+            + "/end PROJECT\n";
+        var result = Asap131Parser.ParseText(text);
+        result.HasErrors.Should().BeFalse(
+            $"no errors expected; actual: {string.Join("; ", result.Errors.Select(e => $"L{e.Line}:{e.Message}"))}");
+        result.Value!.ModCommon.Should().NotBeNull();
+        result.Value!.ModCommon!.Comment.Should().Be("common comment");
+        result.Value!.ModCommon!.ByteOrder.Should().Be(A2lByteOrder.MSB_LAST);
+    }
+
+    [Fact]
+    public void Parse_ModCommon_DefaultByteOrder_IsMsbLast()
+    {
+        const string text = "ASAP2_VERSION 1 31\n"
+            + "/begin PROJECT P\n"
+            + " /begin MOD_COMMON \"\" /end MOD_COMMON\n"
+            + " /begin MODULE M \"\" /end MODULE\n"
+            + "/end PROJECT\n";
+        var result = Asap131Parser.ParseText(text);
+        result.HasErrors.Should().BeFalse(
+            $"no errors expected; actual: {string.Join("; ", result.Errors.Select(e => $"L{e.Line}:{e.Message}"))}");
+        result.Value!.ModCommon.Should().NotBeNull();
+        result.Value!.ModCommon!.ByteOrder.Should().Be(A2lByteOrder.MSB_LAST,
+            "ASAP2 1.31 spec default is MSB_LAST when BYTE_ORDER is omitted");
     }
 }

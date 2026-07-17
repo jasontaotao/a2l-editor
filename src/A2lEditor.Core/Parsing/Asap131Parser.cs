@@ -48,6 +48,7 @@ public sealed class Asap131Parser
         var version = A2lVersion.V1_31;
         string projectName = "", projectComment = "", headerComment = "";
         var modules = new List<A2lModule>();
+        A2lModCommon? modCommon = null;  // v0.3: track MOD_COMMON block
 
         // ASAP2_VERSION line
         if (Current.Kind == TokenKind.Keyword && Current.Text == "ASAP2_VERSION")
@@ -81,6 +82,42 @@ public sealed class Asap131Parser
                     TryConsumeKeyword("/end");
                 }
 
+                // v0.3: MOD_COMMON (project-level config, e.g. BYTE_ORDER)
+                // appears in PROJECT block, BEFORE any MODULE block.
+                // Other project-level blocks (AXIS_DESCR, USER_RIGHTS, etc.) are
+                // still skipped via SkipToMatchingEnd — out of v0.3 scope.
+                // MODULE blocks are detected up front so the existing MODULE loop
+                // below can handle them — we must NOT swallow them via SkipToMatchingEnd.
+                while (Current.Kind == TokenKind.Keyword && Current.Text == "/begin" &&
+                       _pos + 1 < _tokens.Count && _tokens[_pos + 1].Text != "MODULE")
+                {
+                    Consume(); // /begin
+                    int mcStartLine = Current.Line;
+                    if (TryConsumeKeyword("MOD_COMMON"))
+                    {
+                        string mcComment = Current.Kind == TokenKind.StringLiteral ? Consume().Text : "";
+                        A2lByteOrder byteOrder = A2lByteOrder.MSB_LAST;
+                        if (TryConsumeKeyword("BYTE_ORDER"))
+                        {
+                            if (Current.Kind == TokenKind.Keyword && Current.Text == "MSB_FIRST")
+                            { byteOrder = A2lByteOrder.MSB_FIRST; Consume(); }
+                            else if (Current.Kind == TokenKind.Keyword && Current.Text == "MSB_LAST")
+                            { byteOrder = A2lByteOrder.MSB_LAST; Consume(); }
+                            else
+                                _errors.Add(Error("Expected MSB_FIRST or MSB_LAST after BYTE_ORDER",
+                                                   ErrorSeverity.Warning));
+                        }
+                        TryConsumeKeyword("/end");
+                        modCommon = new A2lModCommon(mcComment, byteOrder,
+                            new LineRange(mcStartLine, Current.Line));
+                    }
+                    else
+                    {
+                        // Other project-level blocks (AXIS_DESCR, USER_RIGHTS, etc.) — v0.4
+                        SkipToMatchingEnd();
+                    }
+                }
+
                 // MODULE blocks
                 while (TryConsumeKeyword("/begin") && TryConsumeKeyword("MODULE"))
                 {
@@ -93,7 +130,7 @@ public sealed class Asap131Parser
 
         var doc = new A2lDocument(
             version, projectName, projectComment, headerComment,
-            null, modules, _rawText, _rawText.Count(c => c == '\n') + 1);
+            modCommon, modules, _rawText, _rawText.Count(c => c == '\n') + 1);
 
         return _errors.Any(e => e.Severity == ErrorSeverity.Fatal)
             ? ParseResult<A2lDocument>.Failure(_errors)
