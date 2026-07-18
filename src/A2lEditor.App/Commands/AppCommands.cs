@@ -25,4 +25,7 @@ public static class AppCommands
 
     public static readonly RoutedUICommand DiffFiles =
         new("Diff Files...", "DiffFiles", typeof(AppCommands));
+
+    public static readonly RoutedUICommand ImportFromExcel =
+        new("Import from Excel...", "ImportFromExcel", typeof(AppCommands));
 }

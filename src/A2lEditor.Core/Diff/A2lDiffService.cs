@@ -317,7 +317,9 @@ public sealed class A2lDiffService : IA2lDiffService
                 else
                 {
                     var changes = fieldComparer(leftItem!, rightItem!);
-                    results.Add(new BlockDiff(blockType, key, DiffKind.Modified, changes));
+                    // Field comparer 排除 SourceLines；如果 SourceLines 是唯一差异，降级 Unchanged
+                    var kind = changes.Count > 0 ? DiffKind.Modified : DiffKind.Unchanged;
+                    results.Add(new BlockDiff(blockType, key, kind, changes));
                 }
             }
         }
@@ -352,7 +354,8 @@ public sealed class A2lDiffService : IA2lDiffService
                 else
                 {
                     var changes = fieldComparer(left[i], right[i]);
-                    results.Add(new BlockDiff(blockType, key, DiffKind.Modified, changes));
+                    var kind = changes.Count > 0 ? DiffKind.Modified : DiffKind.Unchanged;
+                    results.Add(new BlockDiff(blockType, key, kind, changes));
                 }
             }
         }

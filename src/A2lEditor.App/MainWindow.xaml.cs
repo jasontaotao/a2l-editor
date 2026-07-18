@@ -236,6 +236,12 @@ public partial class MainWindow : Window
         dialog.ShowDialog();
     }
 
+    private void OnImportFromExcel(object sender, ExecutedRoutedEventArgs e)
+    {
+        var dialog = new Views.ImportExcelDialog { Owner = this };
+        dialog.ShowDialog();
+    }
+
     // --- v0.7 debounced tree rebuild ------------------------------------------
     // Each TextChanged event restarts the 200 ms timer; if no further changes arrive
     // before the tick, the tree is rebuilt exactly once.

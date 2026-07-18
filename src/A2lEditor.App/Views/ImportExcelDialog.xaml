@@ -1,0 +1,68 @@
+<Window x:Class="A2lEditor.App.Views.ImportExcelDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Import from Excel" Height="450" Width="560"
+        WindowStartupLocation="CenterOwner">
+    <DockPanel Margin="8">
+        <!-- Toolbar -->
+        <ToolBar DockPanel.Dock="Top" Margin="0,0,0,6">
+            <Label Content="Excel:" />
+            <TextBox x:Name="ExcelPathBox" Width="280" IsReadOnly="True" />
+            <Button Content="Browse..." Click="OnBrowseExcel" Padding="6,2" />
+            <Separator />
+            <Button Content="Preview" Click="OnPreview" Padding="12,2" IsDefault="True" />
+        </ToolBar>
+
+        <!-- Preview -->
+        <Border DockPanel.Dock="Top" Background="#F0F0F0" Padding="8,4" Margin="0,0,0,6">
+            <TextBlock x:Name="PreviewBlock" Text="Select an .xlsx file and click Preview."
+                       FontWeight="SemiBold" />
+        </Border>
+
+        <!-- Configuration -->
+        <GroupBox DockPanel.Dock="Top" Header="Options" Margin="0,0,0,6" Padding="6">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Label Grid.Row="0" Grid.Column="0" Content="Sheet:" Margin="0,0,6,4" />
+                <TextBox x:Name="SheetBox" Grid.Row="0" Grid.Column="1" Margin="0,0,0,4"
+                         Text="" ToolTip="Leave empty to use first sheet" />
+
+                <Label Grid.Row="1" Grid.Column="0" Content="Module:" Margin="0,0,6,4" />
+                <TextBox x:Name="ModuleBox" Grid.Row="1" Grid.Column="1" Margin="0,0,0,4"
+                         Text="ImportedModule" />
+
+                <Label Grid.Row="2" Grid.Column="0" Content="Comment:" Margin="0,0,6,0" />
+                <TextBox x:Name="CommentBox" Grid.Row="2" Grid.Column="1"
+                         Text="Generated from Excel" />
+            </Grid>
+        </GroupBox>
+
+        <!-- Detail report -->
+        <Border BorderBrush="#CCC" BorderThickness="1" Margin="0,0,0,6">
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                <TextBox x:Name="DetailBox"
+                         IsReadOnly="True"
+                         FontFamily="Consolas"
+                         FontSize="13"
+                         Padding="8"
+                         BorderThickness="0"
+                         Text="" />
+            </ScrollViewer>
+        </Border>
+
+        <!-- Bottom bar -->
+        <DockPanel DockPanel.Dock="Bottom">
+            <Button Content="Save As..." Click="OnSave" Padding="12,2" DockPanel.Dock="Left" Margin="0,0,6,0" />
+            <Button Content="Close" Click="OnClose" Padding="12,2" DockPanel.Dock="Right" IsCancel="True" />
+        </DockPanel>
+    </DockPanel>
+</Window>
