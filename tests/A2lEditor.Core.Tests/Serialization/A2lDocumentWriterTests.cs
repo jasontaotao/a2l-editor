@@ -47,8 +47,8 @@ public class A2lDocumentWriterTests
                 },
                 Characteristics: new List<A2lCharacteristic>
                 {
-                    new("Char1", "Char one long id", "Scalar_UBYTE",
-                        0x3000UL, "0", "255", new LineRange(0, 0))
+                    new("Char1", "Char one long id", "VALUE", "Scalar_UBYTE",
+                        0x3000UL, "0", "255", null, null, new LineRange(0, 0))
                 },
                 AxisPts: new List<A2lAxisPts>(),
                 CompuMethods: new List<A2lCompuMethod>(),
@@ -310,7 +310,7 @@ public class A2lDocumentWriterTests
     public void Write_CharacteristicWithAllFields_PreservesRecordLayoutAndAddress()
     {
         var ch = new A2lCharacteristic(
-            "ch1", "long id", "Scalar_UBYTE", 0x2000, "0", "100",
+            "ch1", "long id", "VALUE", "Scalar_UBYTE", 0x2000, "0", "100", null, null,
             new LineRange(0, 0));
         var doc = new A2lDocument(
             A2lVersion.V1_31, "P", "", "", null,
@@ -327,6 +327,29 @@ public class A2lDocumentWriterTests
         output.Should().Contain("2000");
         output.Should().Contain("0");
         output.Should().Contain("100");
+    }
+
+    [Fact]
+    public void Write_CharacteristicWithTypeMaxDiffConversion_EmitsAllFields()
+    {
+        var ch = new A2lCharacteristic(
+            "ch2", "long id 2", "CURVE", "Scalar_UBYTE", 0x3000,
+            "0", "255", "0.05", "CM_Curve",
+            new LineRange(0, 0));
+        var doc = new A2lDocument(
+            A2lVersion.V1_31, "P", "", "", null,
+            new List<A2lModule> { new A2lModule("M", "", new List<A2lMeasurement>(),
+                new List<A2lCharacteristic> { ch }, new List<A2lAxisPts>(), new List<A2lCompuMethod>(),
+                new List<A2lRecordLayout>(), new List<A2lGroup>(), null, new List<A2lAxisDescr>(), new List<A2lUserRights>(), new List<A2lVersionInfo>(), new List<A2lAxisPtsX>(), new LineRange(0, 0)) },
+            "", 1);
+        using var sw = new StringWriter();
+        new A2lDocumentWriter().WriteToString(doc, sw);
+        var output = sw.ToString();
+
+        output.Should().Contain("ch2");
+        output.Should().Contain("CURVE");      // Type
+        output.Should().Contain("0.05");        // MaxDiff
+        output.Should().Contain("CM_Curve");    // Conversion
     }
 
     // v0.4 Task 4: WriteAxisPts + WriteCompuMethod full content.

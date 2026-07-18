@@ -59,7 +59,7 @@ internal static class DiffFixtures
         new(name, $"{name} desc", A2lDataType.UBYTE, compuMethod, "1", "1", "0", "100", ecuAddress, new LineRange(0, 0));
 
     public static A2lCharacteristic Char(string name, ulong ecuAddress = 0x2000) =>
-        new(name, $"{name} desc", "RL1", ecuAddress, "0", "100", new LineRange(0, 0));
+        new(name, $"{name} desc", "VALUE", "RL1", ecuAddress, "0", "100", null, null, new LineRange(0, 0));
 
     public static A2lCompuMethod Compu(string name, string conversionType = "LINEAR") =>
         new(name, $"{name} desc", conversionType, "%.2", "V", 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, new LineRange(0, 0));

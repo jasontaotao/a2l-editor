@@ -151,6 +151,8 @@ public sealed class A2lDocumentWriter
         sw.Write(' ');
         WriteEscapedString(sw, c.LongIdentifier);
         sw.Write(' ');
+        sw.Write(c.Type);
+        sw.Write(' ');
         if (!string.IsNullOrEmpty(c.RecordLayout)) sw.Write(c.RecordLayout);
         sw.Write(' ');
         if (c.EcuAddress != 0) sw.Write(c.EcuAddress.ToString("X"));
@@ -158,6 +160,8 @@ public sealed class A2lDocumentWriter
         sw.Write(c.LowerLimit);
         sw.Write(' ');
         sw.Write(c.UpperLimit);
+        if (c.MaxDiff is not null) { sw.Write(' '); sw.Write(c.MaxDiff); }
+        if (c.Conversion is not null) { sw.Write(' '); sw.Write(c.Conversion); }
         sw.WriteLine();
         sw.WriteLine("/end CHARACTERISTIC");
     }

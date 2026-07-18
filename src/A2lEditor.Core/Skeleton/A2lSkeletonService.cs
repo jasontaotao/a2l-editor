@@ -63,8 +63,8 @@ public sealed class A2lSkeletonService : IA2lSkeletonService
             if (string.Equals(blockType, "CHARACTERISTIC", StringComparison.OrdinalIgnoreCase))
             {
                 characteristics.Add(new A2lCharacteristic(
-                    name, longId, "Scalar_UBYTE", ecuAddress,
-                    lower, upper, new LineRange(0, 0)));
+                    name, longId, "VALUE", "Scalar_UBYTE", ecuAddress,
+                    lower, upper, null, null, new LineRange(0, 0)));
             }
             else
             {

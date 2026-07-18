@@ -342,6 +342,7 @@ public sealed class Asap131Parser
         int startLine = Current.Line;
         var name = Current.Kind == TokenKind.Identifier ? Consume().Text : "<error>";
         string longId = Current.Kind == TokenKind.StringLiteral ? Consume().Text : "";
+        var type = Current.Kind == TokenKind.Identifier ? Consume().Text : "VALUE";
         var recordLayout = Current.Kind == TokenKind.Identifier ? Consume().Text : "";
         ulong addr = 0;
         if (Current.Kind == TokenKind.Number) ulong.TryParse(
@@ -350,8 +351,20 @@ public sealed class Asap131Parser
         if (Current.Kind == TokenKind.Number) Consume();
         var lo = ParseNumber();
         var hi = ParseNumber();
+        string? maxDiff = null;
+        if (Current.Kind != TokenKind.Keyword)  // MaxDiff 可选数值
+        {
+            maxDiff = Current.Text;
+            Consume();
+        }
+        string? conversion = null;
+        if (Current.Kind != TokenKind.Keyword)  // Conversion 可选标识符
+        {
+            conversion = Current.Text;
+            Consume();
+        }
         TryConsumeKeyword("/end");
-        return new A2lCharacteristic(name, longId, recordLayout, addr, lo, hi,
+        return new A2lCharacteristic(name, longId, type, recordLayout, addr, lo, hi, maxDiff, conversion,
             new LineRange(startLine, Current.Line));
     }
 

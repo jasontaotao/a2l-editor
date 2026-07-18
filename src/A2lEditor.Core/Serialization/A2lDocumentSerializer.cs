@@ -95,10 +95,13 @@ public sealed class A2lDocumentSerializer : IA2lDocumentSerializer
     private static XElement BuildCharacteristic(A2lCharacteristic v) => new("Characteristic",
         new XElement("Name", v.Name),
         new XElement("LongIdentifier", v.LongIdentifier),
+        new XElement("Type", v.Type),
         new XElement("RecordLayout", v.RecordLayout),
         new XElement("EcuAddress", $"0x{v.EcuAddress:X}"),
         new XElement("LowerLimit", v.LowerLimit),
         new XElement("UpperLimit", v.UpperLimit),
+        v.MaxDiff is not null ? new XElement("MaxDiff", v.MaxDiff) : null,
+        v.Conversion is not null ? new XElement("Conversion", v.Conversion) : null,
         BuildLineRange(v.SourceLines));
 
     private static XElement BuildAxisPts(A2lAxisPts v) => new("AxisPts",
@@ -271,10 +274,13 @@ public sealed class A2lDocumentSerializer : IA2lDocumentSerializer
     private static A2lCharacteristic ParseCharacteristic(XElement e) => new(
         e.Element("Name")?.Value ?? "",
         e.Element("LongIdentifier")?.Value ?? "",
+        e.Element("Type")?.Value ?? "VALUE",
         e.Element("RecordLayout")?.Value ?? "",
         ParseHex(e.Element("EcuAddress")?.Value ?? "0"),
         e.Element("LowerLimit")?.Value ?? "",
         e.Element("UpperLimit")?.Value ?? "",
+        e.Element("MaxDiff")?.Value,
+        e.Element("Conversion")?.Value,
         ParseLineRange(e.Element("SourceLines")));
 
     private static A2lAxisPts ParseAxisPts(XElement e) => new(

@@ -477,4 +477,39 @@ public class Asap131ParserTests
         result.Value!.ModCommon.Should().NotBeNull();
         result.Value!.ModCommon!.AlignmentOffset.Should().Be(8UL);
     }
+
+    // ====================================================================
+    //  P0-B regression — CHARACTERISTIC Type / MaxDiff / Conversion fields
+    // ====================================================================
+
+    [Fact]
+    public void Parse_Characteristic_WithTypeMaxDiffConversionStoresFields()
+    {
+        const string text = "ASAP2_VERSION 1 31\n"
+            + "/begin PROJECT P\n"
+            + " /begin MODULE M \"\"\n"
+            + "  /begin CHARACTERISTIC C1 \"desc\" CURVE Scalar_UBYTE 0x1000 0 100 0.05 CM_Curve\n"
+            + "  /end CHARACTERISTIC\n"
+            + "  /begin CHARACTERISTIC C2 \"desc\" VALUE Scalar_UBYTE 0x2000 0 255\n"
+            + "  /end CHARACTERISTIC\n"
+            + " /end MODULE\n"
+            + "/end PROJECT\n";
+        var result = Asap131Parser.ParseText(text);
+        result.HasFatalErrors.Should().BeFalse();
+        result.Value!.Modules.Should().HaveCount(1);
+        var chars = result.Value!.Modules[0].Characteristics;
+        chars.Should().HaveCount(2);
+
+        // C1: full fields
+        chars[0].Name.Should().Be("C1");
+        chars[0].Type.Should().Be("CURVE");
+        chars[0].MaxDiff.Should().Be("0.05");
+        chars[0].Conversion.Should().Be("CM_Curve");
+
+        // C2: minimal — no MaxDiff, no Conversion
+        chars[1].Name.Should().Be("C2");
+        chars[1].Type.Should().Be("VALUE");
+        chars[1].MaxDiff.Should().BeNull();
+        chars[1].Conversion.Should().BeNull();
+    }
 }

@@ -383,13 +383,16 @@ public sealed class A2lDiffService : IA2lDiffService
 
     private static List<FieldChange> CompareCharacteristic(A2lCharacteristic left, A2lCharacteristic right)
     {
-        var c = new List<FieldChange>(6);
+        var c = new List<FieldChange>(9);
         AddIfChanged(c, "Name", left.Name, right.Name);
         AddIfChanged(c, "LongIdentifier", left.LongIdentifier, right.LongIdentifier);
+        AddIfChanged(c, "Type", left.Type, right.Type);
         AddIfChanged(c, "RecordLayout", left.RecordLayout, right.RecordLayout);
         AddIfChangedHex(c, "EcuAddress", left.EcuAddress, right.EcuAddress);
         AddIfChanged(c, "LowerLimit", left.LowerLimit, right.LowerLimit);
         AddIfChanged(c, "UpperLimit", left.UpperLimit, right.UpperLimit);
+        AddIfChanged(c, "MaxDiff", left.MaxDiff ?? "", right.MaxDiff ?? "");
+        AddIfChanged(c, "Conversion", left.Conversion ?? "", right.Conversion ?? "");
         return c;
     }
 

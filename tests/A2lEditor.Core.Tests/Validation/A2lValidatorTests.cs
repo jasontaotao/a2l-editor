@@ -90,8 +90,8 @@ public class A2lValidatorTests
         var m = new A2lModule("M", "",
             Array.Empty<A2lMeasurement>(),
             new[] {
-                new A2lCharacteristic("dup", "", "", 0, "0", "255", new LineRange(3, 3)),
-                new A2lCharacteristic("dup", "", "", 0, "0", "255", new LineRange(4, 4))
+                new A2lCharacteristic("dup", "", "VALUE", "", 0, "0", "255", null, null, new LineRange(3, 3)),
+                new A2lCharacteristic("dup", "", "VALUE", "", 0, "0", "255", null, null, new LineRange(4, 4))
             },
             Array.Empty<A2lAxisPts>(),
             Array.Empty<A2lCompuMethod>(),
