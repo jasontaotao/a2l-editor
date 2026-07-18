@@ -11,7 +11,8 @@
     <PackageReference Include="ELFSharp" Version="2.17.3" />
   </ItemGroup>
   <!--
-    Linked legacy sources (read-only reference under D:\claude_proj2\src\ScriptTool\A2L_UpdateProj\).
+    Linked legacy sources (read-only reference via relative path
+    ../../../src/ScriptTool/A2L_UpdateProj/).
 
     The plan brief (Task 1, step 2) originally listed 3 files (MapSymbolTable.cs,
     MapFormatDetector.cs, ElfParser.cs). On build attempt the third file
@@ -33,7 +34,7 @@
     the legacy project other than these two are consumed.
   -->
   <ItemGroup>
-    <Compile Include="D:\claude_proj2\src\ScriptTool\A2L_UpdateProj\MapSymbolTable.cs" Link="Linked\MapSymbolTable.cs" />
-    <Compile Include="D:\claude_proj2\src\ScriptTool\A2L_UpdateProj\MapFormatDetector.cs" Link="Linked\MapFormatDetector.cs" />
+    <Compile Include="..\..\..\src\ScriptTool\A2L_UpdateProj\MapSymbolTable.cs" Link="Linked\MapSymbolTable.cs" />
+    <Compile Include="..\..\..\src\ScriptTool\A2L_UpdateProj\MapFormatDetector.cs" Link="Linked\MapFormatDetector.cs" />
   </ItemGroup>
 </Project>
