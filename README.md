@@ -1,4 +1,4 @@
-# a2l-editor v0.11
+# a2l-editor v0.12
 
 Desktop GUI + CLI for working with ASAP2 (`.a2l`) files.
 
@@ -37,15 +37,16 @@ The following functionality is implemented and covered by the current test suite
 - **Structured A2L diff** — `a2l-editor diff compare <file1> <file2>` CLI command for structural comparison of two `.a2l` files. Uses C# record equality for block-level name-based matching; detects Added/Removed/Modified/Unchanged blocks with field-level detail via `A2lDiffService`. Supports `--brief` and `--unchanged` flags.
 - **Parser bugfix (v0.11)** — two critical bugs fixed that blocked diff on real A2L files: `ECU_ADDRESS` hex number not consumed (skipped all subsequent blocks),
   and negative limit values (`-40`) not tokenized as `Number` (silently corrupted module parse state).
+- **WPF diff viewer** — `Tools > Diff Files...` menu entry opens a modal dialog for file selection and structured diff report display. Provides Copy Report and status bar feedback. Covers all 11 block types with the same report format as the CLI.
 
 ## Tests
 
-155 passing + 0 skip across 4 test projects:
+158 passing + 0 skip across 4 test projects:
 
-- `A2lEditor.Core.Tests` — 118 (v0.9's 108 + 10 new in v0.10: 10 `A2lDiffService` unit tests)
-- `A2lEditor.Cli.Tests` — 7 (v0.9's 3 + 4 new in v0.10: 4 `DiffCommand` tests)
-- `A2lEditor.App.Tests` — 24 (unchanged from v0.9)
-- `A2lEditor.IntegrationTests` — 6 (unchanged from v0.9)
+- `A2lEditor.Core.Tests` — 118 (unchanged from v0.11)
+- `A2lEditor.Cli.Tests` — 7 (unchanged from v0.11)
+- `A2lEditor.App.Tests` — 27 (v0.11's 24 + 3 new in v0.12: `DiffFilesCommand` + `FormatReport` tests)
+- `A2lEditor.IntegrationTests` — 6 (unchanged from v0.11)
 
 ## Deferred to v1.0+
 
