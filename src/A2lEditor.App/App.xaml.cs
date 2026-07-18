@@ -1,5 +1,7 @@
 using System.Windows;
 using A2lEditor.App.ViewModels;
+using A2lEditor.Core.Services;
+using A2lEditor.Reuse;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace A2lEditor.App;
@@ -12,6 +14,8 @@ public partial class App : Application
     {
         var sc = new ServiceCollection();
         sc.AddSingleton<IDialogService, WpfDialogService>();
+        sc.AddSingleton<IMapSymbolTableAdapter, MapSymbolTableAdapter>();
+        sc.AddSingleton<IMapAlignmentService, MapAlignmentService>();
         sc.AddSingleton<MainWindowViewModel>();
         Services = sc.BuildServiceProvider();
     }
