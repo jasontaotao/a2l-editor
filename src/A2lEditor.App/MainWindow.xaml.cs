@@ -196,10 +196,10 @@ public partial class MainWindow : Window
     private void OnExit(object sender, ExecutedRoutedEventArgs e) => Close();
 
     private void OnUndo(object sender, ExecutedRoutedEventArgs e)
-        => MessageBox.Show("Undo not implemented in v0.7 (planned for v0.8+).", "Undo");
+        => TextEditor.Editor.Undo();
 
     private void OnRedo(object sender, ExecutedRoutedEventArgs e)
-        => MessageBox.Show("Redo not implemented in v0.7 (planned for v0.8+).", "Redo");
+        => TextEditor.Editor.Redo();
 
     private void OnCut(object sender, ExecutedRoutedEventArgs e) => TextEditor.Editor.Cut();
 
@@ -208,7 +208,7 @@ public partial class MainWindow : Window
     private void OnPaste(object sender, ExecutedRoutedEventArgs e) => TextEditor.Editor.Paste();
 
     private void OnFind(object sender, ExecutedRoutedEventArgs e)
-        => MessageBox.Show("Find dialog not implemented in v0.7 (planned for v0.8+).", "Find");
+        => TextEditor.ShowSearch();
 
     private void OnZoomIn(object sender, ExecutedRoutedEventArgs e)
         => TextEditor.Editor.FontSize = Math.Min(TextEditor.Editor.FontSize + 2, 32);

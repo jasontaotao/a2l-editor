@@ -1,4 +1,4 @@
-# a2l-editor v0.19
+# a2l-editor v0.20
 
 Desktop GUI + CLI for working with ASAP2 (`.a2l`) files.
 
@@ -26,7 +26,7 @@ The following functionality is implemented and covered by the current test suite
 - **`VERSION` duplicate block detection** — `A2lValidator` errors on duplicate `VERSION` blocks in a module. Closes 1 v0.5 deferred item.
 - **`MOD_PAR` / `MOD_COMMON` truly-multi-line output** — Writer now emits PROJECT / HEADER / MODULE / MOD_PAR / MOD_COMMON with the helper that emits strings verbatim when they contain newlines (escape-style when single-line). Lock test `BmsModel_RoundTrip_PreservesCommentsAndNoNewlines` confirms zero `\n` drift for BmsModel. Closes 1 v0.5 deferred item.
 - **Drag-and-drop file open** — drag `.a2l` files from File Explorer onto the MainWindow to open them; visual feedback (DodgerBlue border) during drag-over. Closes 1 v0.6 deferred item.
-- **Full menu (Edit / View / Tools / Help)** — 5 top-level menus with 20 sub-items (File: 6 + Edit: 7 + View: 4 + Tools: 2 + Help: 1). Undo/Redo/Find/Format are stub-only ("Not implemented in v0.7"). Closes 1 v0.6 deferred item.
+- **Full menu (Edit / View / Tools / Help)** — 5 top-level menus with 20 sub-items (File: 6 + Edit: 7 + View: 4 + Tools: 2 + Help: 1). Undo/Redo via AvalonEdit UndoStack, Find via AvalonEdit SearchPanel. Format is stub-only ("Not implemented in v0.7"). Closes 1 v0.6 deferred item.
 - **Debounce tree rebuild on text change** — `DispatcherTimer(200ms)` prevents excessive tree rebuilds when typing rapidly; tree rebuilds once after 200ms of no further text changes. Closes 1 v0.6 deferred item.
 - **`UtfUnknown` BOM detection at file open** — `A2lDocument.LoadFromFile` auto-detects UTF-8 / UTF-16 LE/BE / UTF-32 via UtfUnknown NuGet; ASCII upgrades to UTF-8; BOM stripped before parser handoff to keep `RawText` BOM-free. Closes 1 v0.7 deferred item.
 - **Coverage threshold enforcement** — `coverlet.collector` produces Cobertura XML; `CoberturaReport` parser + `verify-coverage.ps1` enforces 80% line / 70% branch gate. Pre-commit hook at `scripts/pre-commit` runs the gate before every commit. Closes 1 v0.7 deferred item.
@@ -57,9 +57,9 @@ The following functionality is implemented and covered by the current test suite
 
 ## Deferred to v1.0+
 
-The following are intentionally not claimed as v0.19 functionality:
+The following are intentionally not claimed as v0.20 functionality:
 
-(none — all deferred items from v0.1–v0.18 are now implemented)
+(none — all deferred items from v0.1–v0.19 are now implemented)
 
 ## Tech stack
 

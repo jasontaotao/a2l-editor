@@ -4,11 +4,14 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Rendering;
+using ICSharpCode.AvalonEdit.Search;
 
 namespace A2lEditor.App.Controls;
 
 public partial class A2lTextEditor : UserControl
 {
+    private SearchPanel? _searchPanel;
+
     public static readonly DependencyProperty TextProperty =
         DependencyProperty.Register(nameof(Text), typeof(string), typeof(A2lTextEditor),
             new FrameworkPropertyMetadata("", FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
@@ -30,7 +33,14 @@ public partial class A2lTextEditor : UserControl
         set => SetValue(IsDirtyProperty, value);
     }
 
-    public A2lTextEditor() => InitializeComponent();
+    public A2lTextEditor()
+    {
+        InitializeComponent();
+        _searchPanel = SearchPanel.Install(Editor);
+    }
+
+    /// <summary>Show the find/replace panel (toggled by Ctrl+F).</summary>
+    public void ShowSearch() => _searchPanel?.Open();
 
     private static void OnTextChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
