@@ -22,7 +22,8 @@ public sealed class A2lMergeService : IA2lMergeService
         A2lDocument baseline,
         A2lDocument modified,
         string? baselinePath = null,
-        string? modifiedPath = null)
+        string? modifiedPath = null,
+        HashSet<string>? acceptedChanges = null)
     {
         if (baseline is null)
             throw new ArgumentNullException(nameof(baseline));
@@ -59,7 +60,7 @@ public sealed class A2lMergeService : IA2lMergeService
             }
 
             var modDiff = diff.ModuleDiffs.FirstOrDefault(d => d.ModuleName == baseMod.Name);
-            var mergedMod = MergeModule(baseMod, modMod, modDiff, messages, ref applied, ref skipped);
+            var mergedMod = MergeModule(baseMod, modMod, modDiff, messages, ref applied, ref skipped, acceptedChanges);
             mergedModules.Add(mergedMod);
         }
 
@@ -90,51 +91,52 @@ public sealed class A2lMergeService : IA2lMergeService
     private static A2lModule MergeModule(
         A2lModule baseline, A2lModule modified,
         ModuleDiff? modDiff,
-        List<string> messages, ref int applied, ref int skipped)
+        List<string> messages, ref int applied, ref int skipped,
+        HashSet<string>? acceptedChanges = null)
     {
         if (modDiff is null)
             return baseline;  // 无 diff → 完整保留
 
         var mergedMeas = MergeBlocks(
             baseline.Measurements, modified.Measurements,
-            modDiff.MeasurementDiffs, m => m.Name, "MEASUREMENT", messages, ref applied, ref skipped);
+            modDiff.MeasurementDiffs, m => m.Name, "MEASUREMENT", messages, ref applied, ref skipped, acceptedChanges);
 
         var mergedChars = MergeBlocks(
             baseline.Characteristics, modified.Characteristics,
-            modDiff.CharacteristicDiffs, c => c.Name, "CHARACTERISTIC", messages, ref applied, ref skipped);
+            modDiff.CharacteristicDiffs, c => c.Name, "CHARACTERISTIC", messages, ref applied, ref skipped, acceptedChanges);
 
         var mergedAxisPts = MergeBlocks(
             baseline.AxisPts, modified.AxisPts,
-            modDiff.AxisPtsDiffs, a => a.Name, "AXIS_PTS", messages, ref applied, ref skipped);
+            modDiff.AxisPtsDiffs, a => a.Name, "AXIS_PTS", messages, ref applied, ref skipped, acceptedChanges);
 
         var mergedAxisPtsX = MergeBlocks(
             baseline.AxisPtsX, modified.AxisPtsX,
-            modDiff.AxisPtsXDiffs, a => a.Name, "AXIS_PTS_X", messages, ref applied, ref skipped);
+            modDiff.AxisPtsXDiffs, a => a.Name, "AXIS_PTS_X", messages, ref applied, ref skipped, acceptedChanges);
 
         var mergedCompu = MergeBlocks(
             baseline.CompuMethods, modified.CompuMethods,
-            modDiff.CompuMethodDiffs, c => c.Name, "COMPU_METHOD", messages, ref applied, ref skipped);
+            modDiff.CompuMethodDiffs, c => c.Name, "COMPU_METHOD", messages, ref applied, ref skipped, acceptedChanges);
 
         var mergedLayouts = MergeBlocks(
             baseline.RecordLayouts, modified.RecordLayouts,
-            modDiff.RecordLayoutDiffs, r => r.Name, "RECORD_LAYOUT", messages, ref applied, ref skipped);
+            modDiff.RecordLayoutDiffs, r => r.Name, "RECORD_LAYOUT", messages, ref applied, ref skipped, acceptedChanges);
 
         var mergedGroups = MergeBlocks(
             baseline.Groups, modified.Groups,
-            modDiff.GroupDiffs, g => g.Name, "GROUP", messages, ref applied, ref skipped);
+            modDiff.GroupDiffs, g => g.Name, "GROUP", messages, ref applied, ref skipped, acceptedChanges);
 
         // AXIS_DESCR — 按 Attribute 匹配
         var mergedAxisDescr = MergeBlocks(
             baseline.AxisDescr, modified.AxisDescr,
-            modDiff.AxisDescrDiffs, ad => ad.Attribute, "AXIS_DESCR", messages, ref applied, ref skipped);
+            modDiff.AxisDescrDiffs, ad => ad.Attribute, "AXIS_DESCR", messages, ref applied, ref skipped, acceptedChanges);
 
         var mergedRights = MergeBlocks(
             baseline.UserRights, modified.UserRights,
-            modDiff.UserRightsDiffs, u => u.UserId, "USER_RIGHTS", messages, ref applied, ref skipped);
+            modDiff.UserRightsDiffs, u => u.UserId, "USER_RIGHTS", messages, ref applied, ref skipped, acceptedChanges);
 
         var mergedVersions = MergeBlocks(
             baseline.VersionInfo, modified.VersionInfo,
-            modDiff.VersionInfoDiffs, v => $"{v.Vendor}:{v.VersionNo}", "VERSION", messages, ref applied, ref skipped);
+            modDiff.VersionInfoDiffs, v => $"{v.Vendor}:{v.VersionNo}", "VERSION", messages, ref applied, ref skipped, acceptedChanges);
 
         // MOD_PAR — compared wins
         string? mergedModPar = modDiff.ModParChange is not null
@@ -171,11 +173,13 @@ public sealed class A2lMergeService : IA2lMergeService
         IReadOnlyList<T> baseline, IReadOnlyList<T> modified,
         IReadOnlyList<BlockDiff> diffs,
         Func<T, string> keySelector, string blockType,
-        List<string> messages, ref int applied, ref int skipped)
+        List<string> messages, ref int applied, ref int skipped,
+        HashSet<string>? acceptedChanges = null)
     {
         var diffByName = diffs.ToDictionary(d => d.BlockName, StringComparer.Ordinal);
         var modifiedByKey = modified.ToDictionary(keySelector, StringComparer.Ordinal);
         var baselineByKey = baseline.ToDictionary(keySelector, StringComparer.Ordinal);
+        var accepted = acceptedChanges; // capture for closure
         var result = new List<T>(baseline.Count + diffs.Count(d => d.Kind == DiffKind.Added));
 
         // 先处理 baseline 顺序（Unchanged/Modified/Removed 保持原位置）
@@ -183,7 +187,8 @@ public sealed class A2lMergeService : IA2lMergeService
         {
             var name = keySelector(item);
             if (diffByName.TryGetValue(name, out var diff) && diff.Kind == DiffKind.Modified
-                && modifiedByKey.TryGetValue(name, out var m))
+                && modifiedByKey.TryGetValue(name, out var m)
+                && (accepted is null || accepted.Contains($"{blockType}:{name}")))
             {
                 result.Add(m);
                 applied++;
@@ -199,7 +204,8 @@ public sealed class A2lMergeService : IA2lMergeService
         foreach (var item in modified)
         {
             var name = keySelector(item);
-            if (!baselineByKey.ContainsKey(name))
+            if (!baselineByKey.ContainsKey(name)
+                && (accepted is null || accepted.Contains($"{blockType}:{name}")))
             {
                 result.Add(item);
                 applied++;

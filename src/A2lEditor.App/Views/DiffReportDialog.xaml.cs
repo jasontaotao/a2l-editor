@@ -110,27 +110,42 @@ public partial class DiffReportDialog : Window
             return;
         }
 
-        var dlg = new Microsoft.Win32.SaveFileDialog
-        {
-            Filter = "ASAP2 files|*.a2l|All files|*.*",
-            FileName = "merged.a2l"
-        };
-        if (dlg.ShowDialog() != true) return;
-
         try
         {
             Mouse.OverrideCursor = Cursors.Wait;
 
             var doc1 = A2lDocument.LoadFromFile(_baselinePath);
             var doc2 = A2lDocument.LoadFromFile(_comparedPath);
+
+            // 交互式冲突审查
+            Mouse.OverrideCursor = null;
+            var conflictDlg = new MergeConflictDialog(_lastReport ?? CreateFreshReport(doc1, doc2))
+            {
+                Owner = this
+            };
+            if (conflictDlg.ShowDialog() != true)
+            {
+                SummaryBlock.Text = "Merge cancelled.";
+                return;
+            }
+            var acceptedChanges = conflictDlg.GetAcceptedChanges();
+            Mouse.OverrideCursor = Cursors.Wait;
+
             var service = new A2lMergeService(new A2lDiffService());
-            var result = service.Merge(doc1, doc2, _baselinePath, _comparedPath);
+            var result = service.Merge(doc1, doc2, _baselinePath, _comparedPath, acceptedChanges);
 
             if (result.MergedDocument is null)
             {
                 SummaryBlock.Text = "Merge produced no output.";
                 return;
             }
+
+            var dlg = new Microsoft.Win32.SaveFileDialog
+            {
+                Filter = "ASAP2 files|*.a2l|All files|*.*",
+                FileName = "merged.a2l"
+            };
+            if (dlg.ShowDialog() != true) return;
 
             new A2lDocumentWriter().WriteToFile(result.MergedDocument, dlg.FileName);
             SummaryBlock.Text = $"Merged file saved: {Path.GetFileName(dlg.FileName)} ({result.AppliedCount} changes applied)";
@@ -144,6 +159,10 @@ public partial class DiffReportDialog : Window
             Mouse.OverrideCursor = null;
         }
     }
+
+    /// <summary>在 _lastReport 为 null 时创建一个新报告。</summary>
+    private static A2lDiffReport CreateFreshReport(A2lDocument doc1, A2lDocument doc2)
+        => new A2lDiffService().DiffDocuments(doc1, doc2);
 
     private void OnCopyReport(object sender, RoutedEventArgs e)
     {

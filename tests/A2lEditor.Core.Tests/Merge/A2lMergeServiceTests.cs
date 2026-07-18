@@ -138,4 +138,59 @@ public class A2lMergeServiceTests
         result.MergedDocument!.Modules.Should().HaveCount(2);
         result.MergedDocument.Modules[1].Name.Should().Be("B");
     }
+
+    // ========================================================
+    // Test 7: 交互式合并 — 接受部分变更
+    // ========================================================
+
+    [Fact]
+    public void Merge_WithAcceptedChanges_FiltersOutRejected()
+    {
+        var baseline = DiffFixtures.DocWith(
+            measurements: new[] { DiffFixtures.Meas("V"), DiffFixtures.Meas("I") },
+            characteristics: new[] { DiffFixtures.Char("C1") });
+        var modified = DiffFixtures.DocWith(
+            measurements: new[] { DiffFixtures.Meas("V", ecuAddress: 0x2000), DiffFixtures.Meas("I", ecuAddress: 0x3000) },
+            characteristics: new[] { DiffFixtures.Char("C1"), DiffFixtures.Char("C2") });
+
+        // 只接受 MEASUREMENT V 和 CHARACTERISTIC C2
+        var accepted = new HashSet<string>(StringComparer.Ordinal)
+        {
+            "MEASUREMENT:V",
+            "CHARACTERISTIC:C2",
+        };
+
+        var result = _sut.Merge(baseline, modified, acceptedChanges: accepted);
+
+        // V 的地址应变更（被接受），I 的地址不变（被拒绝）
+        result.AppliedCount.Should().Be(2); // V 的修改 + C2 的新增
+        result.MergedDocument.Should().NotBeNull();
+        var merged = result.MergedDocument!.Modules[0];
+
+        merged.Measurements.Should().HaveCount(2);
+        merged.Measurements[0].Name.Should().Be("V");
+        merged.Measurements[0].EcuAddress.Should().Be(0x2000); // accepted
+        merged.Measurements[1].Name.Should().Be("I");
+        merged.Measurements[1].EcuAddress.Should().Be(0x1000); // rejected, kept baseline
+
+        merged.Characteristics.Should().HaveCount(2);
+        merged.Characteristics[0].Name.Should().Be("C1"); // kept baseline
+        merged.Characteristics[1].Name.Should().Be("C2"); // added from modified
+    }
+
+    [Fact]
+    public void Merge_WithAllRejected_KeepsBaseline()
+    {
+        var baseline = DiffFixtures.DocWith(
+            measurements: new[] { DiffFixtures.Meas("V") });
+        var modified = DiffFixtures.DocWith(
+            measurements: new[] { DiffFixtures.Meas("V", ecuAddress: 0x2000) });
+
+        var accepted = new HashSet<string>(StringComparer.Ordinal); // empty = reject all
+        var result = _sut.Merge(baseline, modified, acceptedChanges: accepted);
+
+        // 不应应用任何修改
+        result.AppliedCount.Should().Be(0);
+        result.MergedDocument!.Modules[0].Measurements[0].EcuAddress.Should().Be(0x1000);
+    }
 }

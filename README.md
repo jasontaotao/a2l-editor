@@ -1,4 +1,4 @@
-# a2l-editor v0.18
+# a2l-editor v0.19
 
 Desktop GUI + CLI for working with ASAP2 (`.a2l`) files.
 
@@ -44,21 +44,22 @@ The following functionality is implemented and covered by the current test suite
 - **XML/JSON serialization** — `IA2lDocumentSerializer` / `A2lDocumentSerializer` with JSON (via `System.Text.Json`) and XML (via LINQ to `XDocument`) round-trip serialization. JSON supports `JsonStringEnumConverter` for enums. XML builds/parses hierarchical `XElement` trees for all 14 model types. 8 round-trip tests lock fidelity.
 - **A2L→Excel export** — `skeleton export <file.a2l>` CLI command. Writes MEASUREMENT and CHARACTERISTIC definitions back to `.xlsx` using ClosedXML, in the same column format as the skeleton import spec. Supports `--output` and `--sheet` options.
 - **AXIS_DESCR 属性匹配** — diff/merge 中的 AXIS_DESCR 从索引位置匹配改为按 `Attribute` 字段匹配，消除因插入/删除条目导致的索引错位。`CompareBlockCollectionByIndex` / `MergeBlocksByIndex` 已废弃，由通用 name-keyed 方法替代。
+- **交互式合并冲突解决** — `IA2lMergeService.Merge()` 新增可选 `acceptedChanges` 参数（`HashSet<string>`，键格式 `"BlockType:Name"`），仅应用用户接受的变更。WPF `DiffReportDialog` 的 "Save Merged..." 按钮改为先弹出 `MergeConflictDialog` 审查窗，显示所有 Modified/Added/Removed 变更列表，用户可逐个勾选跳过后执行合并。2 个 Core 测试 + 4 个 ChangeItem 测试覆盖。
 
 ## Tests
 
-194 passing + 0 skip across 4 test projects:
+200 passing + 0 skip across 4 test projects:
 
-- `A2lEditor.Core.Tests` — 144 (v0.17's 142 + 2 new: `AxisDescr` attribute-matching tests)
-- `A2lEditor.Cli.Tests` — 14 (unchanged from v0.17)
-- `A2lEditor.App.Tests` — 30 (unchanged from v0.17)
-- `A2lEditor.IntegrationTests` — 6 (unchanged from v0.17)
+- `A2lEditor.Core.Tests` — 146 (v0.18's 144 + 2 new: `acceptedChanges` merge filter tests)
+- `A2lEditor.Cli.Tests` — 14 (unchanged from v0.18)
+- `A2lEditor.App.Tests` — 34 (v0.18's 30 + 4 new: `MergeConflictDialog` / ChangeItem tests)
+- `A2lEditor.IntegrationTests` — 6 (unchanged from v0.18)
 
 ## Deferred to v1.0+
 
-The following are intentionally not claimed as v0.18 functionality:
+The following are intentionally not claimed as v0.19 functionality:
 
-- Interactive merge conflict resolution
+(none — all deferred items from v0.1–v0.18 are now implemented)
 
 ## Tech stack
 
