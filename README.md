@@ -1,4 +1,4 @@
-# a2l-editor v0.8
+# a2l-editor v0.9
 
 Desktop GUI + CLI for working with ASAP2 (`.a2l`) files.
 
@@ -31,20 +31,23 @@ The following functionality is implemented and covered by the current test suite
 - **`UtfUnknown` BOM detection at file open** — `A2lDocument.LoadFromFile` auto-detects UTF-8 / UTF-16 LE/BE / UTF-32 via UtfUnknown NuGet; ASCII upgrades to UTF-8; BOM stripped before parser handoff to keep `RawText` BOM-free. Closes 1 v0.7 deferred item.
 - **Coverage threshold enforcement** — `coverlet.collector` produces Cobertura XML; `CoberturaReport` parser + `verify-coverage.ps1` enforces 80% line / 70% branch gate. Pre-commit hook at `scripts/pre-commit` runs the gate before every commit. Closes 1 v0.7 deferred item.
 - **Byte-for-byte round-trip fidelity** — `A2lDocumentWriter` prioritizes `doc.RawText` emit when the parser ran on the same file; 1:1 read→save preserves the original source byte-for-byte (no whitespace / comment / format drift). Closes 1 v0.7 deferred item.
+- **`A2lEditor.Reuse` linked-source wrapper** — 3 `.cs` files linked from legacy `A2L_UpdateProj/` (`MapSymbolTable` + `MapFormatDetector` + ELF format delegation via ELFSharp 2.17.3); closes the 6-version "MAP/ELF alignment" zombie deferred from v0.1 spec 3.3. Legacy project frozen, zero modifications.
+- **CLI `map <dump-symbols|update|validate>` commands** — batch ECU address updates from MAP/ELF files. Default dry-run, optional `--backup`, `--output`. Supports IAR / HighTech / GCC / ELF32 formats via legacy `MapFormatDetector`.
+- **WPF `Tools > Apply MAP...` menu entry** — interactive MAP apply with coverage preview dialog (matched/missing/extra counts) and confirm prompt before write.
 
 ## Tests
 
-126 passing + 0 skip across 3 test projects:
+141 passing + 0 skip across 4 test projects:
 
-- `A2lEditor.Core.Tests` — 97 (v0.7's 87 + 10 new in v0.8: 3 `A2lDocument.LoadFromFile` BOM-detection cases + 5 `CoberturaReport` parser cases + 2 `ByteForByteRoundTrip` cases for BmsModel 16693-line lock)
-- `A2lEditor.App.Tests` — 23 (unchanged from v0.7; 14 baseline from v0.2 + 9 new in v0.7: drag-and-drop 4 + menu 3 + debounce 2; note implementer deviations — drag-drop landed 4 tests not 3, no `[StaFact]` pattern used, `OpenRecent` stays synchronous not async). App tests run with `parallelizeTestCollections: false` (via `xunit.runner.json`) to avoid a WPF `PackagePart` resource-loader race.
-- `A2lEditor.IntegrationTests` — 6 (CLI validate exit codes 0/1/2 + BmsModel 0-warnings acceptance + BmsModel full round-trip semantic equality + BmsModel multi-line lock + BmsModel byte-for-byte round-trip equality)
+- `A2lEditor.Core.Tests` — 108 (v0.8's 97 + 11 new in v0.9: 4 `MapSymbolTableAdapter` fixtures + 5 `MapAlignmentService` + 2 `MapCoverageReport`)
+- `A2lEditor.Cli.Tests` — 3 (NEW in v0.9: 3 CLI Map commands integration tests)
+- `A2lEditor.App.Tests` — 24 (v0.8's 23 + 1 new in v0.9: `ApplyMapCommand` wiring)
+- `A2lEditor.IntegrationTests` — 6 (unchanged from v0.8)
 
-## Deferred to v0.9+
+## Deferred to v1.0+
 
-The following are intentionally not claimed as v0.8 functionality:
+The following are intentionally not claimed as v0.9 functionality:
 
-- MAP/ELF alignment (planned as v0.2 core feature in original spec; deferred)
 - Excel import → A2L skeleton generation
 - A2L merge / diff
 - XML/JSON serialization of `A2lDocument` (alternative to A2L text)
