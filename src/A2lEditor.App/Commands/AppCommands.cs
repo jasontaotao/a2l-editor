@@ -19,4 +19,7 @@ public static class AppCommands
     public static readonly RoutedUICommand ExitFile =
         new("Exit", "ExitFile", typeof(AppCommands));
     // Note: no default KeyGesture; Alt+F4 is OS default
+
+    public static readonly RoutedUICommand ApplyMap =
+        new("Apply MAP...", "ApplyMap", typeof(AppCommands));
 }

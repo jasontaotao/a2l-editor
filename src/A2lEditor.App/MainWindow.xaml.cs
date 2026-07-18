@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+using A2lEditor.App.Commands;
 using A2lEditor.App.Controls;
 using A2lEditor.App.Highlighting;
 using A2lEditor.App.ViewModels;
@@ -225,6 +226,9 @@ public partial class MainWindow : Window
 
     private void OnFormat(object sender, ExecutedRoutedEventArgs e)
         => MessageBox.Show("Format not implemented in v0.7 (planned for v0.8+).", "Format");
+
+    private void OnApplyMap(object sender, ExecutedRoutedEventArgs e)
+        => ApplyMapCommand.OnExecuted(sender, e);
 
     // --- v0.7 debounced tree rebuild ------------------------------------------
     // Each TextChanged event restarts the 200 ms timer; if no further changes arrive

@@ -27,6 +27,7 @@
         <CommandBinding Command="{x:Static local:AppCommands.ValidateFile}" Executed="OnValidate" />
         <CommandBinding Command="{x:Static local:AppCommands.FormatFile}" Executed="OnFormat" />
         <CommandBinding Command="{x:Static local:AppCommands.ExitFile}" Executed="OnExit" />
+        <CommandBinding Command="{x:Static local:AppCommands.ApplyMap}" Executed="OnApplyMap" />
     </Window.CommandBindings>
     <Border x:Name="DropTargetBorder" BorderBrush="Transparent" BorderThickness="2" AllowDrop="True">
     <DockPanel>
@@ -72,6 +73,8 @@
             <MenuItem Header="_Tools">
                 <MenuItem Header="_Validate" Command="{x:Static local:AppCommands.ValidateFile}" InputGestureText="F5" />
                 <MenuItem Header="_Format" Command="{x:Static local:AppCommands.FormatFile}" InputGestureText="F8" />
+                <Separator />
+                <MenuItem Header="_Apply MAP..." Command="{x:Static local:AppCommands.ApplyMap}" />
             </MenuItem>
             <MenuItem Header="_Help">
                 <MenuItem Header="_About" Command="ApplicationCommands.Help" />
