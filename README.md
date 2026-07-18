@@ -1,4 +1,4 @@
-# a2l-editor v0.10
+# a2l-editor v0.11
 
 Desktop GUI + CLI for working with ASAP2 (`.a2l`) files.
 
@@ -34,7 +34,9 @@ The following functionality is implemented and covered by the current test suite
 - **`A2lEditor.Reuse` linked-source wrapper** — 3 `.cs` files linked from legacy `A2L_UpdateProj/` (`MapSymbolTable` + `MapFormatDetector` + ELF format delegation via ELFSharp 2.17.3); closes the 6-version "MAP/ELF alignment" zombie deferred from v0.1 spec 3.3. Legacy project frozen, zero modifications.
 - **CLI `map <dump-symbols|update|validate>` commands** — batch ECU address updates from MAP/ELF files. Default dry-run, optional `--backup`, `--output`. Supports IAR / HighTech / GCC / ELF32 formats via legacy `MapFormatDetector`.
 - **WPF `Tools > Apply MAP...` menu entry** — interactive MAP apply with coverage preview dialog (matched/missing/extra counts) and confirm prompt before write.
-- **Structured A2L diff** — `a2l-editor diff compare <file1> <file2>` CLI command for structural comparison of two `.a2l` files. Uses C# record equality for block-level name-based matching; detects Added/Removed/Modified/Unchanged blocks with field-level detail. Supports `--brief` and `--unchanged` flags. Covers MEASUREMENT, CHARACTERISTIC, AXIS_PTS, COMPU_METHOD, RECORD_LAYOUT, GROUP, AXIS_DESCR, USER_RIGHTS, VERSION, MOD_PAR blocks.
+- **Structured A2L diff** — `a2l-editor diff compare <file1> <file2>` CLI command for structural comparison of two `.a2l` files. Uses C# record equality for block-level name-based matching; detects Added/Removed/Modified/Unchanged blocks with field-level detail via `A2lDiffService`. Supports `--brief` and `--unchanged` flags.
+- **Parser bugfix (v0.11)** — two critical bugs fixed that blocked diff on real A2L files: `ECU_ADDRESS` hex number not consumed (skipped all subsequent blocks),
+  and negative limit values (`-40`) not tokenized as `Number` (silently corrupted module parse state).
 
 ## Tests
 
