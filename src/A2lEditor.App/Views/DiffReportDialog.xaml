@@ -38,6 +38,7 @@
 
         <!-- Bottom bar -->
         <DockPanel DockPanel.Dock="Bottom">
+            <Button Content="Save Merged..." Click="OnSaveMerged" Padding="12,2" DockPanel.Dock="Left" Margin="0,0,6,0" />
             <Button Content="Copy Report" Click="OnCopyReport" Padding="12,2" DockPanel.Dock="Left" />
             <Button Content="Close" Click="OnClose" Padding="12,2" DockPanel.Dock="Right" IsCancel="True" />
         </DockPanel>

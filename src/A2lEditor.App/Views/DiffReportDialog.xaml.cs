@@ -1,11 +1,14 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using A2lEditor.Core.Diff;
+using A2lEditor.Core.Merge;
 using A2lEditor.Core.Model;
 using A2lEditor.Core.Parsing;
+using A2lEditor.Core.Serialization;
 
 namespace A2lEditor.App.Views;
 
@@ -92,6 +95,49 @@ public partial class DiffReportDialog : Window
         {
             SummaryBlock.Text = $"Error: {ex.Message}";
             ReportBox.Text = "";
+        }
+        finally
+        {
+            Mouse.OverrideCursor = null;
+        }
+    }
+
+    private void OnSaveMerged(object sender, RoutedEventArgs e)
+    {
+        if (_baselinePath is null || _comparedPath is null)
+        {
+            SummaryBlock.Text = "Please run Compare first.";
+            return;
+        }
+
+        var dlg = new Microsoft.Win32.SaveFileDialog
+        {
+            Filter = "ASAP2 files|*.a2l|All files|*.*",
+            FileName = "merged.a2l"
+        };
+        if (dlg.ShowDialog() != true) return;
+
+        try
+        {
+            Mouse.OverrideCursor = Cursors.Wait;
+
+            var doc1 = A2lDocument.LoadFromFile(_baselinePath);
+            var doc2 = A2lDocument.LoadFromFile(_comparedPath);
+            var service = new A2lMergeService(new A2lDiffService());
+            var result = service.Merge(doc1, doc2, _baselinePath, _comparedPath);
+
+            if (result.MergedDocument is null)
+            {
+                SummaryBlock.Text = "Merge produced no output.";
+                return;
+            }
+
+            new A2lDocumentWriter().WriteToFile(result.MergedDocument, dlg.FileName);
+            SummaryBlock.Text = $"Merged file saved: {Path.GetFileName(dlg.FileName)} ({result.AppliedCount} changes applied)";
+        }
+        catch (Exception ex)
+        {
+            SummaryBlock.Text = $"Merge error: {ex.Message}";
         }
         finally
         {

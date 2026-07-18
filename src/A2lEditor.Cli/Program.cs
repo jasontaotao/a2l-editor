@@ -3,11 +3,13 @@ using System.CommandLine.Invocation;
 using A2lEditor.Cli.Commands;
 using A2lEditor.Cli.Commands.Diff;
 using A2lEditor.Cli.Commands.Map;
+using A2lEditor.Cli.Commands.Merge;
 
 var root = new RootCommand("a2l-editor — ASAP2 file editor (CLI)")
 {
     ValidateCommand.Create(),
     MapRootCommand.Create(),
+    MergeRootCommand.Create(),
     DiffRootCommand.Create()
 };
 
@@ -31,6 +33,7 @@ root.SetHandler((InvocationContext context) =>
     Console.WriteLine("Commands:");
     Console.WriteLine("  validate <file>             Validate an .a2l file");
     Console.WriteLine("  diff compare <file1> <file2> Compare two .a2l files structurally");
+    Console.WriteLine("  merge apply <baseline> <modified>  Merge changes (compared-wins)");
     Console.WriteLine("  map dump-symbols|update|validate   MAP/ELF alignment");
     Console.WriteLine();
     Console.WriteLine("Run 'a2l-editor <command> --help' for more information about a command.");
