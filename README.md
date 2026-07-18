@@ -1,4 +1,4 @@
-# a2l-editor v0.12
+# a2l-editor v0.13
 
 Desktop GUI + CLI for working with ASAP2 (`.a2l`) files.
 
@@ -38,22 +38,23 @@ The following functionality is implemented and covered by the current test suite
 - **Parser bugfix (v0.11)** — two critical bugs fixed that blocked diff on real A2L files: `ECU_ADDRESS` hex number not consumed (skipped all subsequent blocks),
   and negative limit values (`-40`) not tokenized as `Number` (silently corrupted module parse state).
 - **WPF diff viewer** — `Tools > Diff Files...` menu entry opens a modal dialog for file selection and structured diff report display. Provides Copy Report and status bar feedback. Covers all 11 block types with the same report format as the CLI.
+- **Two-way A2L merge** — `merge apply <baseline> <modified>` CLI command with compared-wins strategy (Modified/Added → use compared version, Unchanged/Removed → keep baseline). Supports `--dry-run` and `--output`. WPF diff dialog includes `Save Merged...` button.
 
 ## Tests
 
-158 passing + 0 skip across 4 test projects:
+167 passing + 0 skip across 4 test projects:
 
-- `A2lEditor.Core.Tests` — 118 (unchanged from v0.11)
-- `A2lEditor.Cli.Tests` — 7 (unchanged from v0.11)
-- `A2lEditor.App.Tests` — 27 (v0.11's 24 + 3 new in v0.12: `DiffFilesCommand` + `FormatReport` tests)
-- `A2lEditor.IntegrationTests` — 6 (unchanged from v0.11)
+- `A2lEditor.Core.Tests` — 124 (v0.12's 118 + 6 new in v0.13: 6 `A2lMergeService` tests)
+- `A2lEditor.Cli.Tests` — 10 (v0.12's 7 + 3 new in v0.13: 3 `MergeCommand` tests)
+- `A2lEditor.App.Tests` — 27 (unchanged from v0.12)
+- `A2lEditor.IntegrationTests` — 6 (unchanged from v0.12)
 
 ## Deferred to v1.0+
 
-The following are intentionally not claimed as v0.10 functionality:
+The following are intentionally not claimed as v0.13 functionality:
 
-- A2L merge (write-side of diff: apply diff entries to create a merged document)
-- WPF diff viewer (graphical diff display)
+- Interactive merge conflict resolution (keep compared or baseline per block)
+- AXIS_DESCR fuzzy matching (currently matched by index position)
 - Excel import → A2L skeleton generation
 - XML/JSON serialization of `A2lDocument` (alternative to A2L text)
 
