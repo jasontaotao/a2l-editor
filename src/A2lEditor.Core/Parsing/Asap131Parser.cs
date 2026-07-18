@@ -307,8 +307,11 @@ public sealed class Asap131Parser
 
         ulong ecuAddress = 0;
         if (TryConsumeKeyword("ECU_ADDRESS"))
+        {
             ulong.TryParse(Current.Text.TrimStart('0', 'x', 'X'),
                 NumberStyles.HexNumber, CultureInfo.InvariantCulture, out ecuAddress);
+            if (Current.Kind == TokenKind.Number) Consume();
+        }
 
         TryConsumeKeyword("/end");
         return new A2lMeasurement(name, longId, dataType, compuMethod,

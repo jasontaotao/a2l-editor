@@ -110,7 +110,9 @@ public sealed class Asap131Lexer
         int startLine = _line, startCol = _col;
         if (c == '"') return ReadString(startLine, startCol);
         if (char.IsDigit(c) || (c == '0' && _pos + 1 < _text.Length &&
-                                (_text[_pos + 1] == 'x' || _text[_pos + 1] == 'X')))
+                                (_text[_pos + 1] == 'x' || _text[_pos + 1] == 'X'))
+            || ((c == '-' || c == '+') && _pos + 1 < _text.Length
+                && char.IsDigit(_text[_pos + 1])))
             return ReadNumber(startLine, startCol);
         if (c == '(' || c == ')' || c == ',' || c == '[' || c == ']')
             return ReadSymbol(startLine, startCol);
