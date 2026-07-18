@@ -243,4 +243,53 @@ public class A2lDiffServiceTests
         diff.Kind.Should().Be(DiffKind.Modified);
         diff.FieldChanges.Should().Contain(fc => fc.FieldName == "RefMeasurements");
     }
+
+    // ========================================================
+    // Test 11: AXIS_DESCR 属性匹配（替代索引匹配）
+    // ========================================================
+
+    [Fact]
+    public void DiffDocuments_AxisDescrMatchedByAttribute()
+    {
+        // 两个 AXIS_DESCR 属性相同 → 匹配后对比字段变化
+        var left = DiffFixtures.DocWith(
+            axisDescr: new[]
+            {
+                new A2lAxisDescr("STD_AXIS", "X", "CM1", 10, "0", "100", new LineRange(0, 0)),
+                new A2lAxisDescr("CURVE_AXIS", "Time", "CM2", 20, "0", "500", new LineRange(0, 0)),
+            });
+        var right = DiffFixtures.DocWith(
+            axisDescr: new[]
+            {
+                new A2lAxisDescr("STD_AXIS", "X", "CM1", 10, "0", "100", new LineRange(0, 0)),      // unchanged
+                new A2lAxisDescr("CURVE_AXIS", "Speed", "CM2", 20, "0", "500", new LineRange(0, 0)), // InputQuantity changed
+            });
+
+        var report = _sut.DiffDocuments(left, right);
+
+        // STD_AXIS 完全一致 → Unchanged；CURVE_AXIS InputQuantity 变化 → Modified
+        report.TotalModified.Should().Be(1);
+        report.ModuleDiffs[0].AxisDescrDiffs.Should().HaveCount(2);
+        report.ModuleDiffs[0].AxisDescrDiffs[0].Kind.Should().Be(DiffKind.Modified);
+        report.ModuleDiffs[0].AxisDescrDiffs[0].BlockName.Should().Be("CURVE_AXIS");
+        report.ModuleDiffs[0].AxisDescrDiffs[0].FieldChanges.Should()
+            .Contain(fc => fc.FieldName == "InputQuantity");
+        report.ModuleDiffs[0].AxisDescrDiffs[1].Kind.Should().Be(DiffKind.Unchanged);
+        report.ModuleDiffs[0].AxisDescrDiffs[1].BlockName.Should().Be("STD_AXIS");
+    }
+
+    [Fact]
+    public void DiffDocuments_AxisDescrAttributeChange_DetectsAddedAndRemoved()
+    {
+        var left = DiffFixtures.DocWith(
+            axisDescr: new[] { DiffFixtures.AxisDescr("STD_AXIS") });
+        var right = DiffFixtures.DocWith(
+            axisDescr: new[] { DiffFixtures.AxisDescr("CURVE_AXIS") });
+
+        var report = _sut.DiffDocuments(left, right);
+
+        report.TotalAdded.Should().Be(1);
+        report.TotalRemoved.Should().Be(1);
+        report.ModuleDiffs[0].AxisDescrDiffs.Should().HaveCount(2);
+    }
 }

@@ -120,7 +120,7 @@ public sealed class A2lDiffService : IA2lDiffService
             AllBlocksAdded(m.CompuMethods, "COMPU_METHOD", x => x.Name),
             AllBlocksAdded(m.RecordLayouts, "RECORD_LAYOUT", x => x.Name),
             AllBlocksAdded(m.Groups, "GROUP", x => x.Name),
-            AllBlocksAddedByIndex(m.AxisDescr, "AXIS_DESCR"),
+            AllBlocksAdded(m.AxisDescr, "AXIS_DESCR", ad => ad.Attribute),
             AllBlocksAdded(m.UserRights, "USER_RIGHTS", x => x.UserId),
             AllBlocksAdded(m.VersionInfo, "VERSION", v => $"{v.Vendor}:{v.VersionNo}"),
             m.ModPar is null ? null : new FieldChange("ModPar", null, Truncate(m.ModPar)))
@@ -136,7 +136,7 @@ public sealed class A2lDiffService : IA2lDiffService
             AllBlocksRemoved(m.CompuMethods, "COMPU_METHOD", x => x.Name),
             AllBlocksRemoved(m.RecordLayouts, "RECORD_LAYOUT", x => x.Name),
             AllBlocksRemoved(m.Groups, "GROUP", x => x.Name),
-            AllBlocksRemovedByIndex(m.AxisDescr, "AXIS_DESCR"),
+            AllBlocksRemoved(m.AxisDescr, "AXIS_DESCR", ad => ad.Attribute),
             AllBlocksRemoved(m.UserRights, "USER_RIGHTS", x => x.UserId),
             AllBlocksRemoved(m.VersionInfo, "VERSION", v => $"{v.Vendor}:{v.VersionNo}"),
             m.ModPar is null ? null : new FieldChange("ModPar", Truncate(m.ModPar), null))
@@ -239,9 +239,9 @@ public sealed class A2lDiffService : IA2lDiffService
             left.Groups, right.Groups,
             "GROUP", g => g.Name, CompareGroup);
 
-        var axisDescr = CompareBlockCollectionByIndex(
+        var axisDescr = CompareBlockCollection(
             left.AxisDescr, right.AxisDescr,
-            "AXIS_DESCR", CompareAxisDescr);
+            "AXIS_DESCR", ad => ad.Attribute, CompareAxisDescr);
 
         var rights = CompareBlockCollection(
             left.UserRights, right.UserRights,
@@ -540,7 +540,7 @@ public sealed class A2lDiffService : IA2lDiffService
         AllBlocksAdded(m.CompuMethods, "COMPU_METHOD", x => x.Name),
         AllBlocksAdded(m.RecordLayouts, "RECORD_LAYOUT", x => x.Name),
         AllBlocksAdded(m.Groups, "GROUP", x => x.Name),
-        AllBlocksAddedByIndex(m.AxisDescr, "AXIS_DESCR"),
+        AllBlocksAdded(m.AxisDescr, "AXIS_DESCR", ad => ad.Attribute),
         AllBlocksAdded(m.UserRights, "USER_RIGHTS", x => x.UserId),
         AllBlocksAdded(m.VersionInfo, "VERSION", v => $"{v.Vendor}:{v.VersionNo}"),
         m.ModPar is null ? null : new FieldChange("ModPar", null, Truncate(m.ModPar)));
@@ -555,7 +555,7 @@ public sealed class A2lDiffService : IA2lDiffService
         AllBlocksRemoved(m.CompuMethods, "COMPU_METHOD", x => x.Name),
         AllBlocksRemoved(m.RecordLayouts, "RECORD_LAYOUT", x => x.Name),
         AllBlocksRemoved(m.Groups, "GROUP", x => x.Name),
-        AllBlocksRemovedByIndex(m.AxisDescr, "AXIS_DESCR"),
+        AllBlocksRemoved(m.AxisDescr, "AXIS_DESCR", ad => ad.Attribute),
         AllBlocksRemoved(m.UserRights, "USER_RIGHTS", x => x.UserId),
         AllBlocksRemoved(m.VersionInfo, "VERSION", v => $"{v.Vendor}:{v.VersionNo}"),
         m.ModPar is null ? null : new FieldChange("ModPar", Truncate(m.ModPar), null));

@@ -123,10 +123,10 @@ public sealed class A2lMergeService : IA2lMergeService
             baseline.Groups, modified.Groups,
             modDiff.GroupDiffs, g => g.Name, "GROUP", messages, ref applied, ref skipped);
 
-        // AXIS_DESCR — 按索引合并
-        var mergedAxisDescr = MergeBlocksByIndex(
+        // AXIS_DESCR — 按 Attribute 匹配
+        var mergedAxisDescr = MergeBlocks(
             baseline.AxisDescr, modified.AxisDescr,
-            modDiff.AxisDescrDiffs, "AXIS_DESCR", messages, ref applied, ref skipped);
+            modDiff.AxisDescrDiffs, ad => ad.Attribute, "AXIS_DESCR", messages, ref applied, ref skipped);
 
         var mergedRights = MergeBlocks(
             baseline.UserRights, modified.UserRights,
