@@ -1,4 +1,4 @@
-# a2l-editor v0.13
+# a2l-editor v0.14
 
 Desktop GUI + CLI for working with ASAP2 (`.a2l`) files.
 
@@ -39,24 +39,26 @@ The following functionality is implemented and covered by the current test suite
   and negative limit values (`-40`) not tokenized as `Number` (silently corrupted module parse state).
 - **WPF diff viewer** — `Tools > Diff Files...` menu entry opens a modal dialog for file selection and structured diff report display. Provides Copy Report and status bar feedback. Covers all 11 block types with the same report format as the CLI.
 - **Two-way A2L merge** — `merge apply <baseline> <modified>` CLI command with compared-wins strategy (Modified/Added → use compared version, Unchanged/Removed → keep baseline). Supports `--dry-run` and `--output`. WPF diff dialog includes `Save Merged...` button.
+- **Excel → A2L skeleton generation** — `skeleton generate <excel.xlsx>` CLI command. Reads signal definitions from Excel (.xlsx via ClosedXML) and generates a complete .a2l file with MEASUREMENT, CHARACTERISTIC, and auto-generated COMPU_METHOD stubs. Supports `--sheet`, `--module`, `--comment`, `--output` options.
 
 ## Tests
 
-167 passing + 0 skip across 4 test projects:
+175 passing + 0 skip across 4 test projects:
 
-- `A2lEditor.Core.Tests` — 124 (v0.12's 118 + 6 new in v0.13: 6 `A2lMergeService` tests)
-- `A2lEditor.Cli.Tests` — 10 (v0.12's 7 + 3 new in v0.13: 3 `MergeCommand` tests)
-- `A2lEditor.App.Tests` — 27 (unchanged from v0.12)
-- `A2lEditor.IntegrationTests` — 6 (unchanged from v0.12)
+- `A2lEditor.Core.Tests` — 130 (v0.13's 124 + 6 new in v0.14: 6 `A2lSkeletonService` tests)
+- `A2lEditor.Cli.Tests` — 12 (v0.13's 10 + 2 new in v0.14: 2 `SkeletonCommand` tests)
+- `A2lEditor.App.Tests` — 27 (unchanged from v0.13)
+- `A2lEditor.IntegrationTests` — 6 (unchanged from v0.13)
 
 ## Deferred to v1.0+
 
-The following are intentionally not claimed as v0.13 functionality:
+The following are intentionally not claimed as v0.14 functionality:
 
-- Interactive merge conflict resolution (keep compared or baseline per block)
-- AXIS_DESCR fuzzy matching (currently matched by index position)
-- Excel import → A2L skeleton generation
-- XML/JSON serialization of `A2lDocument` (alternative to A2L text)
+- Interactive merge conflict resolution
+- WPF skeleton import dialog
+- Excel→A2L bidirectional sync
+- AXIS_DESCR fuzzy matching (currently matched by index)
+- XML/JSON serialization of `A2lDocument`
 
 ## Tech stack
 
