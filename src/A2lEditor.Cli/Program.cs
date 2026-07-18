@@ -1,12 +1,14 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using A2lEditor.Cli.Commands;
+using A2lEditor.Cli.Commands.Diff;
 using A2lEditor.Cli.Commands.Map;
 
 var root = new RootCommand("a2l-editor — ASAP2 file editor (CLI)")
 {
     ValidateCommand.Create(),
-    MapRootCommand.Create()
+    MapRootCommand.Create(),
+    DiffRootCommand.Create()
 };
 
 // System.CommandLine 2.0 beta4 auto-attaches a built-in `--version` option
@@ -28,6 +30,7 @@ root.SetHandler((InvocationContext context) =>
     Console.WriteLine();
     Console.WriteLine("Commands:");
     Console.WriteLine("  validate <file>             Validate an .a2l file");
+    Console.WriteLine("  diff compare <file1> <file2> Compare two .a2l files structurally");
     Console.WriteLine("  map dump-symbols|update|validate   MAP/ELF alignment");
     Console.WriteLine();
     Console.WriteLine("Run 'a2l-editor <command> --help' for more information about a command.");

@@ -1,0 +1,28 @@
+ASAP2_VERSION  1 31
+/begin PROJECT DiffTestProject "Diff test project comment"
+ /begin HEADER "Header comments"
+ /end HEADER
+
+ /begin MODULE DiffTestModule "Diff test module"
+  /begin MOD_PAR "module parameters"
+  /end MOD_PAR
+
+  /begin RECORD_LAYOUT Scalar_UBYTE
+   FNC_VALUES 1 UBYTE COLUMN_DIR DIRECT
+  /end RECORD_LAYOUT
+
+  /begin MEASUREMENT V "Battery voltage" UBYTE CM1 0.1 1.0 0 100 ECU_ADDRESS 0x1000
+  /end MEASUREMENT
+
+  /begin MEASUREMENT I "Pack current" UBYTE CM1 0.1 1.0 0 100 ECU_ADDRESS 0x1004
+  /end MEASUREMENT
+
+  /begin COMPU_METHOD CM_LINEAR "Linear conversion" LINEAR "%.1" "V"
+   COEFFS 1 0 0 0 0 0
+  /end COMPU_METHOD
+
+  /begin GROUP G_Main "Main group"
+   /begin REF_MEASUREMENT V I /end REF_MEASUREMENT
+  /end GROUP
+ /end MODULE
+/end PROJECT
