@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Xml.Linq;
@@ -23,6 +24,7 @@ public sealed class A2lDocumentSerializer : IA2lDocumentSerializer
     {
         WriteIndented = true,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
         Converters = { new JsonStringEnumConverter() },
         PropertyNameCaseInsensitive = true,
     };
@@ -31,8 +33,18 @@ public sealed class A2lDocumentSerializer : IA2lDocumentSerializer
         => JsonSerializer.Serialize(doc, JsonOptions);
 
     public A2lDocument DeserializeFromJson(string json)
-        => JsonSerializer.Deserialize<A2lDocument>(json, JsonOptions)
-           ?? throw new InvalidOperationException("JSON deserialization returned null.");
+    {
+        try
+        {
+            return JsonSerializer.Deserialize<A2lDocument>(json, JsonOptions)
+                   ?? throw new InvalidOperationException("JSON deserialization returned null.");
+        }
+        catch (JsonException ex)
+        {
+            throw new InvalidOperationException(
+                $"JSON deserialization failed at line {ex.LineNumber}, byte {ex.BytePositionInLine}: {ex.Message}", ex);
+        }
+    }
 
     // ====================================================================
     // XML
@@ -46,8 +58,16 @@ public sealed class A2lDocumentSerializer : IA2lDocumentSerializer
 
     public A2lDocument DeserializeFromXml(string xml)
     {
-        var xDoc = XDocument.Parse(xml);
-        return ParseDoc(xDoc.Root ?? throw new InvalidOperationException("XML root element missing."));
+        try
+        {
+            var xDoc = XDocument.Parse(xml);
+            return ParseDoc(xDoc.Root ?? throw new InvalidOperationException("XML root element missing."));
+        }
+        catch (System.Xml.XmlException ex)
+        {
+            throw new InvalidOperationException(
+                $"XML deserialization failed at line {ex.LineNumber}, position {ex.LinePosition}: {ex.Message}", ex);
+        }
     }
 
     // ---------------------------------------------------------------
@@ -204,7 +224,8 @@ public sealed class A2lDocumentSerializer : IA2lDocumentSerializer
 
     private static A2lDocument ParseDoc(XElement root)
     {
-        var version = Enum.Parse<A2lVersion>(root.Element("Version")?.Value ?? "V1_31");
+        var version = Enum.Parse<A2lVersion>(
+            root.Element("Version")?.Value ?? "V1_31", ignoreCase: true);
         var projectName = root.Element("ProjectName")?.Value ?? "";
         var projectComment = root.Element("ProjectComment")?.Value ?? "";
         var headerComment = root.Element("HeaderComment")?.Value ?? "";
@@ -262,7 +283,7 @@ public sealed class A2lDocumentSerializer : IA2lDocumentSerializer
     private static A2lMeasurement ParseMeasurement(XElement e) => new(
         e.Element("Name")?.Value ?? "",
         e.Element("LongIdentifier")?.Value ?? "",
-        Enum.Parse<A2lDataType>(e.Element("DataType")?.Value ?? "UBYTE"),
+        Enum.Parse<A2lDataType>(e.Element("DataType")?.Value ?? "UBYTE", ignoreCase: true),
         e.Element("CompuMethod")?.Value ?? "",
         e.Element("Resolution")?.Value ?? "",
         e.Element("Accuracy")?.Value ?? "",
@@ -355,9 +376,9 @@ public sealed class A2lDocumentSerializer : IA2lDocumentSerializer
 
     private static A2lModCommon ParseModCommon(XElement e) => new(
         e.Element("Comment")?.Value ?? "",
-        Enum.Parse<A2lByteOrder>(e.Element("ByteOrder")?.Value ?? "MSB_LAST"),
+        Enum.Parse<A2lByteOrder>(e.Element("ByteOrder")?.Value ?? "MSB_LAST", ignoreCase: true),
         e.Element("DataSize") is { } ds ? ulong.Parse(ds.Value, CultureInfo.InvariantCulture) : null,
-        e.Element("AlignmentByteOrder") is { } abo ? Enum.Parse<A2lByteOrder>(abo.Value) : null,
+        e.Element("AlignmentByteOrder") is { } abo ? Enum.Parse<A2lByteOrder>(abo.Value, ignoreCase: true) : null,
         e.Element("AlignmentOffset") is { } ao ? ulong.Parse(ao.Value, CultureInfo.InvariantCulture) : null,
         ParseLineRange(e.Element("SourceLines")));
 
@@ -398,9 +419,13 @@ public sealed class A2lDocumentSerializer : IA2lDocumentSerializer
 
     private static ulong ParseHex(string s)
     {
-        if (string.IsNullOrEmpty(s)) return 0;
+        if (string.IsNullOrEmpty(s))
+            throw new ArgumentException("Hex address value is null or empty.", nameof(s));
         var clean = s.Trim().TrimStart('0', 'x', 'X');
-        ulong.TryParse(clean, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var addr);
+        if (string.IsNullOrEmpty(clean))
+            return 0; // "0x0" or "0" → valid zero address
+        if (!ulong.TryParse(clean, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var addr))
+            throw new FormatException($"Invalid hex address: '{s}' — expected format like 0x1000 or DEAD.");
         return addr;
     }
 }

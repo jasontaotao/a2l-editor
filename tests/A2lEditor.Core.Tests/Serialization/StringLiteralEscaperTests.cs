@@ -36,11 +36,11 @@ public class StringLiteralEscaperTests
     }
 
     [Fact]
-    public void Escape_NewlinesCarriageReturnsTabs_EscapesCorrectly()
+    public void Escape_NewlinesCarriageReturnsTabs_PassThrough()
     {
-        // Input:  line1\nline2\r\ttab
-        // Output: line1\nline2\r\ttab  (with \n \r \t escape sequences)
-        StringLiteralEscaper.Escape("line1\nline2\r\ttab")
-            .Should().Be("line1\\nline2\\r\\ttab");
+        // 控制字符不经转义直接通过——A2L lexer (ReadString) 不解释 \n \r \t 转义序列，
+        // 所以 escaper 也不产生它们。多行字符串由 lexer 原生支持（读取到闭合 " 为止）。
+        var input = "line1\nline2\r\ttab";
+        StringLiteralEscaper.Escape(input).Should().Be(input);
     }
 }

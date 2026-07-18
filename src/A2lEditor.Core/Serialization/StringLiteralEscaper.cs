@@ -5,7 +5,11 @@ namespace A2lEditor.Core.Serialization;
 public static class StringLiteralEscaper
 {
     /// Escape special characters for A2L string literal output.
-    /// Mirrors Asap131Lexer.ReadString (L122-127) in reverse.
+    /// A2L lexer (Asap131Lexer.ReadString) only recognizes \ and " as
+    /// escape-prefix sequences (\ → skip backslash, keep next char).
+    /// Control characters (\n, \r, \t) are NOT interpreted as escapes by
+    /// the lexer, so this escaper does NOT emit them — it passes real
+    /// control characters through for multi-line string support.
     /// Order matters: escape backslash FIRST to avoid double-escaping.
     public static string Escape(string s)
     {
@@ -19,9 +23,6 @@ public static class StringLiteralEscaper
             {
                 case '\\': sb.Append("\\\\"); break;
                 case '"':  sb.Append("\\\""); break;
-                case '\r': sb.Append("\\r"); break;
-                case '\n': sb.Append("\\n"); break;
-                case '\t': sb.Append("\\t"); break;
                 default:   sb.Append(c); break;
             }
         }
@@ -44,7 +45,6 @@ public static class StringLiteralEscaper
                 case '\\': sw.Write("\\\\"); break;
                 case '\n': sw.Write('\n'); break;     // 真实换行 (vs Escape 写 \\n)
                 case '\r': break;                     // skip CR (Windows line endings)
-                case '\t': sw.Write("\\t"); break;
                 default:  sw.Write(ch); break;
             }
         }

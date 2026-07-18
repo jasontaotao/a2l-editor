@@ -25,9 +25,20 @@ public sealed class A2lSkeletonService : IA2lSkeletonService
         var opts = options ?? new SkeletonGenerateOptions();
 
         using var workbook = new XLWorkbook(excelPath);
-        var ws = opts.SheetName is not null
-            ? workbook.Worksheet(opts.SheetName)
-            : workbook.Worksheet(1);
+
+        IXLWorksheet ws;
+        if (opts.SheetName is not null)
+        {
+            if (!workbook.Worksheets.Any(w => w.Name == opts.SheetName))
+                throw new ArgumentException(
+                    $"Sheet '{opts.SheetName}' not found in '{excelPath}'. Available sheets: " +
+                    string.Join(", ", workbook.Worksheets.Select(w => $"'{w.Name}'")));
+            ws = workbook.Worksheet(opts.SheetName);
+        }
+        else
+        {
+            ws = workbook.Worksheet(1);
+        }
 
         var rows = ws.RowsUsed().ToList();
         if (rows.Count <= 1)  // 只有 header 或空
@@ -62,8 +73,12 @@ public sealed class A2lSkeletonService : IA2lSkeletonService
 
             if (string.Equals(blockType, "CHARACTERISTIC", StringComparison.OrdinalIgnoreCase))
             {
+                // 用 D 列 DataType 选择 RECORD_LAYOUT 名称
+                var recordLayout = string.IsNullOrEmpty(dataTypeStr)
+                    ? "Scalar_UBYTE"
+                    : "Scalar_" + dataTypeStr.ToUpperInvariant();
                 characteristics.Add(new A2lCharacteristic(
-                    name, longId, "VALUE", "Scalar_UBYTE", ecuAddress,
+                    name, longId, "VALUE", recordLayout, ecuAddress,
                     lower, upper, null, null, new LineRange(0, 0)));
             }
             else
@@ -144,8 +159,11 @@ public sealed class A2lSkeletonService : IA2lSkeletonService
     {
         if (string.IsNullOrEmpty(s)) return 0;
         var clean = s.Trim().TrimStart('0', 'x', 'X');
-        ulong.TryParse(clean, NumberStyles.HexNumber,
-            CultureInfo.InvariantCulture, out var addr);
+        if (string.IsNullOrEmpty(clean))
+            return 0; // "0x0" or "0"
+        if (!ulong.TryParse(clean, NumberStyles.HexNumber,
+                CultureInfo.InvariantCulture, out var addr))
+            throw new FormatException($"Invalid hex address in Excel: '{s}' — expected 0x-prefixed hex.");
         return addr;
     }
 
