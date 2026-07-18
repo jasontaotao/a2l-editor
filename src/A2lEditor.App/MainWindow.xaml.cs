@@ -220,7 +220,7 @@ public partial class MainWindow : Window
         => TextEditor.Editor.FontSize = 12;
 
     private void OnAbout(object sender, ExecutedRoutedEventArgs e)
-        => MessageBox.Show("a2l-editor v0.7\n\nASAP2 (.a2l) GUI + CLI editor.", "About");
+        => MessageBox.Show("a2l-editor v0.20\n\nASAP2 (.a2l) GUI + CLI editor.\nhttps://github.com/jasontaotao/a2l-editor", "About");
 
     private void OnValidate(object sender, ExecutedRoutedEventArgs e) => ViewModel?.Validate();
 
