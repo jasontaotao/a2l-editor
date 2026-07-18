@@ -1,4 +1,4 @@
-# a2l-editor v0.16
+# a2l-editor v0.17
 
 Desktop GUI + CLI for working with ASAP2 (`.a2l`) files.
 
@@ -42,22 +42,22 @@ The following functionality is implemented and covered by the current test suite
 - **Excel → A2L skeleton generation** — `skeleton generate <excel.xlsx>` CLI command. Reads signal definitions from Excel (.xlsx via ClosedXML) and generates a complete .a2l file with MEASUREMENT, CHARACTERISTIC, and auto-generated COMPU_METHOD stubs. Supports `--sheet`, `--module`, `--comment`, `--output` options.
 - **WPF skeleton import dialog** — `Tools > Import from Excel...` menu entry opens a modal dialog with interactive file selection, preview of measurement/characteristic counts, and Save As workflow. Follows the same pattern as the diff/merge dialog.
 - **XML/JSON serialization** — `IA2lDocumentSerializer` / `A2lDocumentSerializer` with JSON (via `System.Text.Json`) and XML (via LINQ to `XDocument`) round-trip serialization. JSON supports `JsonStringEnumConverter` for enums. XML builds/parses hierarchical `XElement` trees for all 14 model types. 8 round-trip tests lock fidelity.
+- **A2L→Excel export** — `skeleton export <file.a2l>` CLI command. Writes MEASUREMENT and CHARACTERISTIC definitions back to `.xlsx` using ClosedXML, in the same column format as the skeleton import spec. Supports `--output` and `--sheet` options.
 
 ## Tests
 
-186 passing + 0 skip across 4 test projects:
+192 passing + 0 skip across 4 test projects:
 
-- `A2lEditor.Core.Tests` — 138 (v0.15's 130 + 8 new: `A2lDocumentSerializerTests`)
-- `A2lEditor.Cli.Tests` — 12 (unchanged from v0.15)
-- `A2lEditor.App.Tests` — 30 (unchanged from v0.15)
-- `A2lEditor.IntegrationTests` — 6 (unchanged from v0.15)
+- `A2lEditor.Core.Tests` — 142 (v0.16's 138 + 4 new: `A2lExcelExporterTests`)
+- `A2lEditor.Cli.Tests` — 14 (v0.16's 12 + 2 new: `SkeletonExport` tests)
+- `A2lEditor.App.Tests` — 30 (unchanged from v0.16)
+- `A2lEditor.IntegrationTests` — 6 (unchanged from v0.16)
 
 ## Deferred to v1.0+
 
-The following are intentionally not claimed as v0.16 functionality:
+The following are intentionally not claimed as v0.17 functionality:
 
 - Interactive merge conflict resolution
-- Excel→A2L bidirectional sync
 - AXIS_DESCR fuzzy matching (currently matched by index)
 
 ## Tech stack

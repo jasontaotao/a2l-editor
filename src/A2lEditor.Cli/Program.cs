@@ -37,6 +37,7 @@ root.SetHandler((InvocationContext context) =>
     Console.WriteLine("  diff compare <file1> <file2> Compare two .a2l files structurally");
     Console.WriteLine("  merge apply <baseline> <modified>  Merge changes (compared-wins)");
     Console.WriteLine("  skeleton generate <excel>    Generate A2L skeleton from Excel (.xlsx)");
+    Console.WriteLine("  skeleton export <a2l>        Export A2L signal definitions to Excel (.xlsx)");
     Console.WriteLine("  map dump-symbols|update|validate   MAP/ELF alignment");
     Console.WriteLine();
     Console.WriteLine("Run 'a2l-editor <command> --help' for more information about a command.");

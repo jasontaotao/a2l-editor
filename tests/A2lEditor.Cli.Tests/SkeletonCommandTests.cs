@@ -33,7 +33,8 @@ public class SkeletonCommandTests : IDisposable
         var outputPath = System.IO.Path.GetTempFileName() + ".a2l";
         try
         {
-            var exitCode = await InvokeSkeleton(_excelPath, outputPath);
+            var exitCode = await InvokeSkeleton(new[]
+                { "skeleton", "generate", _excelPath, "--output", outputPath });
             exitCode.Should().Be(0);
             File.Exists(outputPath).Should().BeTrue();
             var content = File.ReadAllText(outputPath);
@@ -58,13 +59,38 @@ public class SkeletonCommandTests : IDisposable
         exitCode.Should().Be(2);
     }
 
-    private static async Task<int> InvokeSkeleton(string excelPath, string outputPath)
+    [Fact]
+    public async Task SkeletonExport_ExitsZero()
+    {
+        var outputPath = System.IO.Path.GetTempFileName() + ".xlsx";
+        try
+        {
+            var exitCode = await InvokeSkeleton(new[]
+                { "skeleton", "export", "samples/minimal-diff.a2l", "--output", outputPath });
+            exitCode.Should().Be(0);
+            File.Exists(outputPath).Should().BeTrue();
+            new FileInfo(outputPath).Length.Should().BeGreaterThan(0);
+        }
+        finally
+        {
+            if (File.Exists(outputPath)) File.Delete(outputPath);
+        }
+    }
+
+    [Fact]
+    public async Task SkeletonExport_FileNotFound_ExitsTwo()
+    {
+        var exitCode = await InvokeSkeleton(new[]
+            { "skeleton", "export", "samples/nonexistent.a2l" });
+        exitCode.Should().Be(2);
+    }
+
+    private static async Task<int> InvokeSkeleton(string[] args)
     {
         var root = new RootCommand
         {
             A2lEditor.Cli.Commands.Skeleton.SkeletonRootCommand.Create()
         };
-        return await root.InvokeAsync(new[]
-            { "skeleton", "generate", excelPath, "--output", outputPath });
+        return await root.InvokeAsync(args);
     }
 }
