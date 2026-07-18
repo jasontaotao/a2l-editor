@@ -28,6 +28,7 @@
         <CommandBinding Command="{x:Static local:AppCommands.FormatFile}" Executed="OnFormat" />
         <CommandBinding Command="{x:Static local:AppCommands.ExitFile}" Executed="OnExit" />
         <CommandBinding Command="{x:Static local:AppCommands.ApplyMap}" Executed="OnApplyMap" />
+        <CommandBinding Command="{x:Static local:AppCommands.DiffFiles}" Executed="OnDiffFiles" />
     </Window.CommandBindings>
     <Border x:Name="DropTargetBorder" BorderBrush="Transparent" BorderThickness="2" AllowDrop="True">
     <DockPanel>
@@ -75,6 +76,8 @@
                 <MenuItem Header="_Format" Command="{x:Static local:AppCommands.FormatFile}" InputGestureText="F8" />
                 <Separator />
                 <MenuItem Header="_Apply MAP..." Command="{x:Static local:AppCommands.ApplyMap}" />
+                <Separator />
+                <MenuItem Header="_Diff Files..." Command="{x:Static local:AppCommands.DiffFiles}" />
             </MenuItem>
             <MenuItem Header="_Help">
                 <MenuItem Header="_About" Command="ApplicationCommands.Help" />

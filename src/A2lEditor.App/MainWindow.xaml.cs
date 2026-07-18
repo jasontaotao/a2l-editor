@@ -230,6 +230,12 @@ public partial class MainWindow : Window
     private void OnApplyMap(object sender, ExecutedRoutedEventArgs e)
         => ApplyMapCommand.OnExecuted(sender, e);
 
+    private void OnDiffFiles(object sender, ExecutedRoutedEventArgs e)
+    {
+        var dialog = new Views.DiffReportDialog { Owner = this };
+        dialog.ShowDialog();
+    }
+
     // --- v0.7 debounced tree rebuild ------------------------------------------
     // Each TextChanged event restarts the 200 ms timer; if no further changes arrive
     // before the tick, the tree is rebuilt exactly once.
