@@ -1,4 +1,4 @@
-# a2l-editor v0.9
+# a2l-editor v0.10
 
 Desktop GUI + CLI for working with ASAP2 (`.a2l`) files.
 
@@ -34,22 +34,24 @@ The following functionality is implemented and covered by the current test suite
 - **`A2lEditor.Reuse` linked-source wrapper** — 3 `.cs` files linked from legacy `A2L_UpdateProj/` (`MapSymbolTable` + `MapFormatDetector` + ELF format delegation via ELFSharp 2.17.3); closes the 6-version "MAP/ELF alignment" zombie deferred from v0.1 spec 3.3. Legacy project frozen, zero modifications.
 - **CLI `map <dump-symbols|update|validate>` commands** — batch ECU address updates from MAP/ELF files. Default dry-run, optional `--backup`, `--output`. Supports IAR / HighTech / GCC / ELF32 formats via legacy `MapFormatDetector`.
 - **WPF `Tools > Apply MAP...` menu entry** — interactive MAP apply with coverage preview dialog (matched/missing/extra counts) and confirm prompt before write.
+- **Structured A2L diff** — `a2l-editor diff compare <file1> <file2>` CLI command for structural comparison of two `.a2l` files. Uses C# record equality for block-level name-based matching; detects Added/Removed/Modified/Unchanged blocks with field-level detail. Supports `--brief` and `--unchanged` flags. Covers MEASUREMENT, CHARACTERISTIC, AXIS_PTS, COMPU_METHOD, RECORD_LAYOUT, GROUP, AXIS_DESCR, USER_RIGHTS, VERSION, MOD_PAR blocks.
 
 ## Tests
 
-141 passing + 0 skip across 4 test projects:
+155 passing + 0 skip across 4 test projects:
 
-- `A2lEditor.Core.Tests` — 108 (v0.8's 97 + 11 new in v0.9: 4 `MapSymbolTableAdapter` fixtures + 5 `MapAlignmentService` + 2 `MapCoverageReport`)
-- `A2lEditor.Cli.Tests` — 3 (NEW in v0.9: 3 CLI Map commands integration tests)
-- `A2lEditor.App.Tests` — 24 (v0.8's 23 + 1 new in v0.9: `ApplyMapCommand` wiring)
-- `A2lEditor.IntegrationTests` — 6 (unchanged from v0.8)
+- `A2lEditor.Core.Tests` — 118 (v0.9's 108 + 10 new in v0.10: 10 `A2lDiffService` unit tests)
+- `A2lEditor.Cli.Tests` — 7 (v0.9's 3 + 4 new in v0.10: 4 `DiffCommand` tests)
+- `A2lEditor.App.Tests` — 24 (unchanged from v0.9)
+- `A2lEditor.IntegrationTests` — 6 (unchanged from v0.9)
 
 ## Deferred to v1.0+
 
-The following are intentionally not claimed as v0.9 functionality:
+The following are intentionally not claimed as v0.10 functionality:
 
+- A2L merge (write-side of diff: apply diff entries to create a merged document)
+- WPF diff viewer (graphical diff display)
 - Excel import → A2L skeleton generation
-- A2L merge / diff
 - XML/JSON serialization of `A2lDocument` (alternative to A2L text)
 
 ## Tech stack
