@@ -149,8 +149,26 @@ public sealed class Asap131Parser
         var axisPtsX = new List<A2lAxisPtsX>();  // v0.6: AXIS_PTS_X list
         string? moduleModPar = null;  // v0.3: track MOD_PAR comment
 
-        while (!(Current.Kind == TokenKind.Keyword && Current.Text == "/end"))
+        // P0-A fix: only "/end MODULE" (with the matching block-name) terminates
+        // a MODULE. A bare "/end" from ANY inner block — e.g. EB-tresos v1.71
+        // "/end CHARACTERISTIC" — must NOT be read as the MODULE end. Before this
+        // fix, ParseCharacteristic's field-order mismatch (see P0-B, known gap)
+        // left the parser sitting on an inner "/end CHARACTERISTIC", which this
+        // while-loop consumed as MODULE end → silently truncating the module at
+        // the first CHARACTERISTIC (M=0/C=1 with ZERO parse errors on BmsModel.a2l).
+        while (!IsModuleEnd(out bool isLoneEnd))
         {
+            // A bare "/end <not MODULE>" at MODULE scope is malformed (unmatched
+            // closer). Recover by consuming the "/end" + its trailing block-name
+            // token and continuing — never silently treat it as MODULE end.
+            if (isLoneEnd)
+            {
+                Consume(); // /end
+                if (_pos < _tokens.Count && Current.Kind == TokenKind.Keyword &&
+                    Current.Text != "/begin" && Current.Text != "/end")
+                    Consume(); // trailing BLOCK_NAME (if any)
+                continue;
+            }
             if (Current.Kind == TokenKind.Eof)
             {
                 _errors.Add(Error("Unexpected EOF inside MODULE", ErrorSeverity.Fatal));
@@ -610,6 +628,23 @@ public sealed class Asap131Parser
 
     private Token Current => _tokens[_pos];
     private Token Consume() => _tokens[_pos++];
+
+    // P0-A fix: returns true if the current token position marks the end of the
+    // surrounding MODULE ("/end MODULE"). `isLoneEnd` is set true when the current
+    // token IS "/end" but the following block-name is NOT "MODULE" — i.e. an
+    // unmatched inner-block closer that must be consumed-and-skipped, never
+    // treated as the MODULE end.
+    private bool IsModuleEnd(out bool isLoneEnd)
+    {
+        isLoneEnd = false;
+        if (Current.Kind != TokenKind.Keyword || Current.Text != "/end")
+            return false;
+        if (_pos + 1 < _tokens.Count && _tokens[_pos + 1].Kind == TokenKind.Keyword &&
+            string.Equals(_tokens[_pos + 1].Text, "MODULE", StringComparison.OrdinalIgnoreCase))
+            return true;
+        isLoneEnd = true;
+        return false;
+    }
     private bool TryConsumeKeyword(string kw)
     {
         if (Current.Kind == TokenKind.Keyword &&

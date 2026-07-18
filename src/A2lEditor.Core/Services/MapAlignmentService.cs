@@ -58,7 +58,13 @@ public sealed class MapAlignmentService : IMapAlignmentService
 
         var newDoc = options.DryRun
             ? null
-            : doc with { Modules = newModules };
+            // MAP2 fix: DROP RawText when returning the updated document. The writer
+            // short-circuits to RawText verbatim when it is non-empty
+            // (A2lDocumentWriter L18-22), so preserving RawText via "doc with { ... }"
+            // would emit the ORIGINAL bytes and silently discard every ECU_ADDRESS
+            // edit — the map-update --no-dry-run path wrote files back unchanged.
+            // Forcing RawText="" redirects the writer to the semantic emit path.
+            : doc with { Modules = newModules, RawText = "" };
 
         return new MapApplyResult(updated, skipped.Count, skipped, newDoc);
     }

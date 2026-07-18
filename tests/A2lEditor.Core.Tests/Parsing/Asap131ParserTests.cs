@@ -406,8 +406,62 @@ public class Asap131ParserTests
         rl.Entries[1].IndexDecr.Should().BeNull();
     }
 
+    // ====================================================================
+    //  P0 regression — ParseModule must not let an inner block's /end
+    //  terminate the surrounding MODULE. On EB-tresos v1.71-style files
+    //  (samples/BmsModel.a2l) the inner CHARACTERISTIC's "/end CHARACTERISTIC"
+    //  used to be misread as "/end MODULE" and silently truncate module
+    //  parsing — yielding M=0/C=1 (and 354 MEASUREMENT + 903 other
+    //  CHARACTERISTIC silently dropped, with ZERO parse errors).
+    //  These counts are the authoritative ground truth from the fixture
+    //  (grep -c over the source file) and act as a sanity sentinel: if any
+    //  block type silently underparses again, these assertions catch it
+    //  even when record-level field correctness tests stay green.
+    // ====================================================================
+
+    private static readonly string BmsModelPath = Path.Combine(
+        AppContext.BaseDirectory, "samples", "BmsModel.a2l");
+
     [Fact]
-    public void Parse_ModCommonAlignmentOffset_StoresAlignmentOffset()
+    public void Parse_BmsModel_BlockCounts_MatchSourceFileGroundTruth()
+    {
+        var result = Asap131Parser.ParseFile(BmsModelPath);
+        result.Value.Should().NotBeNull("BmsModel.a2l must produce a document");
+        result.Value!.Modules.Should().HaveCount(1, "BmsModel.a2l has exactly 1 MODULE");
+        var m = result.Value!.Modules[0];
+
+        m.Measurements.Should().HaveCount(354,
+            "P0 regression: inner-block /end was misread as /end MODULE, silently dropping all measurements");
+        m.Characteristics.Should().HaveCount(904,
+            "P0 regression: only the first CHARACTERISTIC was parsed before MODULE was truncated");
+        m.RecordLayouts.Should().HaveCount(45);
+        m.CompuMethods.Should().HaveCount(8);
+        m.AxisPts.Should().HaveCount(2);
+        m.Groups.Should().HaveCount(3);
+        // MEASUREMENT fields already match EB-tresos grammar, so once the
+        // truncation is fixed their values must be correct too.
+        var sample = m.Measurements.First(x => x.Name == "ACM_tDebugACChgEn");
+        sample.DataType.Should().Be(A2lDataType.UBYTE);
+        sample.CompuMethod.Should().Be("BMS_CM_uint8");
+        sample.EcuAddress.Should().Be(0x0000UL);
+        sample.UpperLimit.Should().Be("255");
+    }
+
+    [Fact]
+    public void Parse_BmsModel_HasNoFatalErrors_AfterP0Fix()
+    {
+        // Before P0-A the parser reported ZERO errors despite dropping 903
+        // blocks — the silent failure mode. After P0-A, parsing reaches
+        // the full module body; we still expect no FATAL errors on the
+        // fixture (field-level mismatches in CHARACTERISTIC/AXIS_PTS are
+        // a separate P0-B concern tracked as a known gap, not fatal).
+        var result = Asap131Parser.ParseFile(BmsModelPath);
+        result.HasFatalErrors.Should().BeFalse(
+            $"no fatal errors expected on BmsModel.a2l; actual: {string.Join("; ", result.Errors.Where(e => e.Severity == ErrorSeverity.Fatal).Select(e => $"L{e.Line}:{e.Message}"))}");
+    }
+
+    [Fact]
+    public void Parse_ModCommon_StoresAlignmentOffset()
     {
         // MODULE nested inside PROJECT block; MOD_COMMON inside MODULE
         // matches the v1.61 _moduleModCommon lift fallback.
