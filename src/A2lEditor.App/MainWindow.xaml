@@ -30,6 +30,7 @@
         <CommandBinding Command="{x:Static local:AppCommands.ApplyMap}" Executed="OnApplyMap" />
         <CommandBinding Command="{x:Static local:AppCommands.DiffFiles}" Executed="OnDiffFiles" />
         <CommandBinding Command="{x:Static local:AppCommands.ImportFromExcel}" Executed="OnImportFromExcel" />
+        <CommandBinding Command="{x:Static local:AppCommands.ExportToExcel}" Executed="OnExportToExcel" />
     </Window.CommandBindings>
     <Border x:Name="DropTargetBorder" BorderBrush="Transparent" BorderThickness="2" AllowDrop="True">
     <DockPanel>
@@ -80,6 +81,7 @@
                 <Separator />
                 <MenuItem Header="_Diff Files..." Command="{x:Static local:AppCommands.DiffFiles}" />
                 <MenuItem Header="_Import from Excel..." Command="{x:Static local:AppCommands.ImportFromExcel}" />
+                <MenuItem Header="_Export to Excel..." Command="{x:Static local:AppCommands.ExportToExcel}" />
             </MenuItem>
             <MenuItem Header="_Help">
                 <MenuItem Header="_About" Command="ApplicationCommands.Help" />

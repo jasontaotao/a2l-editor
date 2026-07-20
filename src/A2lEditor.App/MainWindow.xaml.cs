@@ -242,6 +242,44 @@ public partial class MainWindow : Window
         dialog.ShowDialog();
     }
 
+    private void OnExportToExcel(object sender, ExecutedRoutedEventArgs e)
+    {
+        if (ViewModel is null || string.IsNullOrEmpty(ViewModel.RawText))
+        {
+            MessageBox.Show("No document open. Open an .a2l file first.", "Export to Excel");
+            return;
+        }
+
+        var dlg = new Microsoft.Win32.SaveFileDialog
+        {
+            Filter = "Excel files|*.xlsx|All files|*.*",
+            FileName = "signals.xlsx"
+        };
+        if (dlg.ShowDialog() != true) return;
+
+        try
+        {
+            Mouse.OverrideCursor = Cursors.Wait;
+            var parseResult = A2lEditor.Core.Parsing.Asap131Parser.ParseText(ViewModel.RawText);
+            if (parseResult.HasFatalErrors || parseResult.Value is null)
+            {
+                MessageBox.Show("Cannot export: document has parse errors.", "Export to Excel");
+                return;
+            }
+
+            new A2lEditor.Core.Skeleton.A2lExcelExporter().Export(parseResult.Value, dlg.FileName);
+            ViewModel.StatusMessage = $"Exported to: {System.IO.Path.GetFileName(dlg.FileName)}";
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Export error: {ex.Message}", "Export to Excel");
+        }
+        finally
+        {
+            Mouse.OverrideCursor = null;
+        }
+    }
+
     // --- v0.7 debounced tree rebuild ------------------------------------------
     // Each TextChanged event restarts the 200 ms timer; if no further changes arrive
     // before the tick, the tree is rebuilt exactly once.

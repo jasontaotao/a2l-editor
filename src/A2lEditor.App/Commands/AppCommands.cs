@@ -28,4 +28,7 @@ public static class AppCommands
 
     public static readonly RoutedUICommand ImportFromExcel =
         new("Import from Excel...", "ImportFromExcel", typeof(AppCommands));
+
+    public static readonly RoutedUICommand ExportToExcel =
+        new("Export to Excel...", "ExportToExcel", typeof(AppCommands));
 }

@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>a2l-editor 实操手册</title>
+<style>
+:root {
+  --bg: #fafafa;
+  --fg: #1a1a1a;
+  --accent: #2563eb;
+  --border: #d0d0d0;
+  --code-bg: #eef1f5;
+  --card-bg: #fff;
+  --heading: #111;
+  --muted: #666;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif;
+  font-size: 15px; line-height: 1.75; color: var(--fg); background: var(--bg);
+  max-width: 840px; margin: 0 auto; padding: 32px 24px 80px;
+}
+h1 { font-size: 28px; font-weight: 800; margin-bottom: 4px; }
+h1 .tag { font-size: 14px; font-weight: 600; background: #2563eb; color: #fff; padding: 2px 10px; border-radius: 20px; margin-left: 8px; display: inline-block; }
+h2 { font-size: 20px; font-weight: 700; margin: 36px 0 12px; padding-bottom: 6px; border-bottom: 2px solid var(--accent); }
+h3 { font-size: 16px; font-weight: 600; margin: 24px 0 8px; }
+h4 { font-size: 15px; font-weight: 600; margin: 18px 0 6px; }
+p { margin-bottom: 10px; }
+ul, ol { padding-left: 22px; margin: 8px 0 14px; }
+li { margin-bottom: 6px; }
+code { font-family: "JetBrains Mono", "Fira Code", Consolas, monospace; font-size: 13px; background: var(--code-bg); padding: 2px 6px; border-radius: 4px; }
+pre { background: #1a1a2e; color: #e4e4ef; padding: 14px 18px; border-radius: 8px; overflow-x: auto; font-size: 13px; line-height: 1.5; margin: 10px 0 16px; }
+pre code { background: none; padding: 0; color: inherit; }
+table { width: 100%; border-collapse: collapse; margin: 10px 0 16px; font-size: 14px; }
+th, td { border: 1px solid var(--border); padding: 7px 10px; text-align: left; }
+th { background: var(--code-bg); font-weight: 600; }
+tr:nth-child(even) { background: #eef1f5; }
+tr:nth-child(odd) { background: var(--card-bg); }
+.box { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; margin: 14px 0; }
+.box-tip { border-left: 4px solid #16a34a; }
+.box-warn { border-left: 4px solid #f59e0b; }
+.box-info { border-left: 4px solid #2563eb; }
+kbd { display: inline-block; font-family: inherit; font-size: 13px; background: #eef1f5; border: 1px solid #ccc; border-radius: 4px; padding: 1px 6px; box-shadow: 0 1px 0 #bbb; }
+.step { display: flex; gap: 12px; margin: 14px 0; padding: 12px 16px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; }
+.step-num { flex-shrink: 0; width: 28px; height: 28px; background: var(--accent); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
+.step-body { flex: 1; }
+.step-body p { margin-bottom: 4px; }
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #18181b; --fg: #e4e4e7; --accent: #60a5fa; --border: #2a2a2e;
+    --code-bg: #1e1e2e; --card-bg: #1e1e21; --heading: #f4f4f5; --muted: #a1a1aa;
+  }
+  tr:nth-child(even) { background: #26262b; }
+  tr:nth-child(odd) { background: #1e1e21; }
+  kbd { background: #2a2a32; border-color: #444; }
+}
+</style>
+</head>
+<body>
+
+<h1>a2l-editor 实操手册 <span class="tag">v0.20</span></h1>
+<p style="color:var(--muted);margin-bottom:24px;">
+  面向标定工程师的实战教程。从打开文件到合并变更，按场景一步一步来。
+</p>
+
+<!-- ================================================== -->
+<h2>📖 场景一：打开与浏览 A2L 文件</h2>
+
+<p>你有一份来自 ECU 开发工具的 <code>.a2l</code> 文件，想查看里面的信号定义。</p>
+
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body">
+    <strong>启动 GUI</strong>
+    <p>打开命令行，执行：</p>
+    <pre><code>dotnet run --project src/A2lEditor.App</code></pre>
+    <p>或者双击 <code>publish/a2l-editor.exe</code>（如果已打包）。</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body">
+    <strong>打开文件</strong>
+    <p>菜单 <kbd>File</kbd> → <kbd>Open...</kbd>，选择你的 <code>.a2l</code> 文件。<br>
+    或者直接把文件从资源管理器拖到窗口上（窗口会显示蓝色光晕提示）。</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body">
+    <strong>浏览信号</strong>
+    <p>左侧树形面板列出所有 <strong>MODULE</strong>，展开后可以看到 MEASUREMENT 和 CHARACTERISTIC 列表。</p>
+    <p>点击任意信号名，编辑器自动跳转到对应行并高亮半秒。</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num">4</div>
+  <div class="step-body">
+    <strong>搜索内容</strong>
+    <p>按 <kbd>Ctrl+F</kbd> 弹出搜索面板。输入关键字（如信号名、地址），支持上下翻遍历匹配项。点击面板上的替换按钮可切换替换模式。</p>
+  </div>
+</div>
+
+<div class="box box-info">
+  <strong>💡 快捷键备忘</strong>
+  <table>
+    <tr><td><kbd>Ctrl+Z</kbd></td><td>撤销</td></tr>
+    <tr><td><kbd>Ctrl+Y</kbd></td><td>重做</td></tr>
+    <tr><td><kbd>Ctrl+F</kbd></td><td>查找/替换</td></tr>
+    <tr><td><kbd>Ctrl++</kbd> / <kbd>-</kbd></td><td>放大/缩小</td></tr>
+    <tr><td><kbd>Ctrl+0</kbd></td><td>重置缩放</td></tr>
+    <tr><td><kbd>F5</kbd></td><td>验证文件</td></tr>
+  </table>
+</div>
+
+<!-- ================================================== -->
+<h2>📖 场景二：验证文件是否正确</h2>
+
+<p>你编辑完 A2L 后，想检查有没有语法错误。</p>
+
+<h4>方法 A：在 GUI 中</h4>
+<p>按 <kbd>F5</kbd> 或菜单 <kbd>Tools</kbd> → <kbd>Validate</kbd>。<br>
+底部面板会显示所有错误和警告。<strong>双击任意错误行</strong>，编辑器跳到对应位置。</p>
+
+<h4>方法 B：在命令行中</h4>
+<pre><code># 验证文件
+dotnet src/A2lEditor.Cli/bin/Release/net8.0/a2l-editor.dll validate samples/BmsModel.a2l
+
+# 退出码：
+#   0 = 通过，1 = 有错误/警告，2 = 文件打不开
+
+# 如果你在项目目录下，也可以：
+dotnet run --project src/A2lEditor.Cli -- validate samples/BmsModel.a2l</code></pre>
+
+<div class="box box-tip">
+  <strong>✅ 验证器检查项：</strong>
+  解析语法错误 · 重复信号名称 · 重复 VERSION 块 · 非 MSB_LAST 字节序警告。
+</div>
+
+<!-- ================================================== -->
+<h2>📖 场景三：从 Excel 生成 A2L 骨架</h2>
+
+<p>你的标定团队用 Excel 管理信号列表，现在要生成一份 A2L 文件用于 ECU 集成。</p>
+
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body">
+    <strong>准备 Excel 文件</strong>
+    <p>按以下列布局整理数据（<strong>首行为表头，自动跳过</strong>）：</p>
+    <table>
+      <tr><th>列</th><th>内容</th><th>示例</th></tr>
+      <tr><td>A</td><td>信号名称</td><td><code>V</code></td></tr>
+      <tr><td>B</td><td>描述</td><td><code>Battery voltage</code></td></tr>
+      <tr><td>C</td><td>类型（可空，默认 MEASUREMENT）</td><td><code>MEASUREMENT</code></td></tr>
+      <tr><td>D</td><td>数据类型</td><td><code>UBYTE</code></td></tr>
+      <tr><td>E</td><td>转换方法</td><td><code>BMS_CM_uint8</code></td></tr>
+      <tr><td>F</td><td>下限</td><td><code>0</code></td></tr>
+      <tr><td>G</td><td>上限</td><td><code>255</code></td></tr>
+      <tr><td>H</td><td>ECU 地址（十六进制）</td><td><code>0x1000</code></td></tr>
+      <tr><td>I</td><td>分辨率</td><td><code>0.1</code></td></tr>
+      <tr><td>J</td><td>精度</td><td><code>1.0</code></td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body">
+    <strong>生成 A2L</strong>
+    <h4>方法 A：命令行</h4>
+    <pre><code>dotnet run --project src/A2lEditor.Cli -- skeleton generate signals.xlsx -o skeleton.a2l
+
+# 也可以指定模块名和 Sheet
+dotnet run --project src/A2lEditor.Cli -- skeleton generate signals.xlsx \
+    --module BMS_Module --sheet Sheet1 -o bms.a2l</code></pre>
+    <h4>方法 B：GUI（推荐初学者）</h4>
+    <p>菜单 <kbd>Tools</kbd> → <kbd>Import from Excel...</kbd></p>
+    <p>弹出对话框中：</p>
+    <ol>
+      <li>点 <strong>Browse...</strong> 选择 <code>.xlsx</code> 文件</li>
+      <li>点 <strong>Preview</strong> 预览解析出的信号数量</li>
+      <li>确认 Module 名称和注释（可选修改）</li>
+      <li>点 <strong>Save As...</strong> 保存生成的 <code>.a2l</code> 文件</li>
+    </ol>
+  </div>
+</div>
+
+<div class="box box-tip">
+  <strong>💡 自动生成的内容：</strong>
+  MEASUREMENT / CHARACTERISTIC 声明 · COMPU_METHOD 存根（线性转换、直通系数） · 按数据类型匹配的 RECORD_LAYOUT。
+</div>
+
+<!-- ================================================== -->
+<h2>📖 场景四：从 A2L 导出回 Excel</h2>
+
+<p>你手上有一份完整的 A2L 文件，需要提取信号列表给测试团队做分析。</p>
+
+<h4>方法 A：命令行</h4>
+<pre><code>dotnet run --project src/A2lEditor.Cli -- skeleton export BmsModel.a2l -o BmsModel_signals.xlsx</code></pre>
+
+<h4>方法 B：GUI</h4>
+<p>菜单 <kbd>Tools</kbd> → <kbd>Export to Excel...</kbd>，选保存路径即可。<br>
+前提：当前已打开一个有效的 <code>.a2l</code> 文件。</p>
+
+<p>导出后，这个 xlsx 可以直接用 <strong>Import from Excel...</strong> 再转回 A2L：</p>
+<pre><code>dotnet run --project src/A2lEditor.Cli -- skeleton generate BmsModel_signals.xlsx -o roundtrip.a2l</code></pre>
+
+<!-- ================================================== -->
+<h2>📖 场景五：对比两个 A2L 文件的差异</h2>
+
+<p>你收到了两份 A2L 版本（比如 baseline 是旧版，compared 是同事修改后的新版），想找出具体改动。</p>
+
+<h4>方法 A：命令行</h4>
+<pre><code>dotnet run --project src/A2lEditor.Cli -- diff compare baseline.a2l modified.a2l
+
+# 只看摘要
+dotnet run --project src/A2lEditor.Cli -- diff compare baseline.a2l modified.a2l --brief</code></pre>
+
+<h4>方法 B：GUI</h4>
+<ol>
+  <li>菜单 <kbd>Tools</kbd> → <kbd>Diff Files...</kbd></li>
+  <li>在 Baseline 行点 <strong>Browse...</strong> 选旧文件</li>
+  <li>在 Compared 行点 <strong>Browse...</strong> 选新文件</li>
+  <li>点 <strong>Compare</strong> — 结果输出到下方文本框</li>
+  <li>差异按块类型分组：Added（新增）、Removed（删除）、Modified（修改的字段及新旧值）</li>
+</ol>
+
+<!-- ================================================== -->
+<h2>📖 场景六：合并两份 A2L</h2>
+
+<p>你要把同事的修改合并到自己的 baseline 上，或者想选择性接受某些改动。</p>
+
+<h4>快速合并（全盘接受修改）</h4>
+<pre><code>dotnet run --project src/A2lEditor.Cli -- merge apply baseline.a2l modified.a2l -o merged.a2l
+
+# 先预览（不生成文件）
+dotnet run --project src/A2lEditor.Cli -- merge apply baseline.a2l modified.a2l --dry-run</code></pre>
+
+<h4>交互式合并（逐个选择）</h4>
+<ol>
+  <li>GUI 菜单 <kbd>Tools</kbd> → <kbd>Diff Files...</kbd></li>
+  <li>选好两个文件后点 <strong>Compare</strong></li>
+  <li>点 <strong>Save Merged...</strong></li>
+  <li>弹出 <strong>Merge Conflict Review</strong> 审查窗口：<br>
+    🟢 Added 新增 / 🔵 Modified 修改 / 🔴 Removed 删除<br>
+    每项前面有复选框，<strong>取消勾选 = 跳过这个变更</strong>（保留 baseline 版本）</li>
+  <li>点 <strong>Accept Selected</strong> → 选保存路径 → 生成合并后的文件</li>
+</ol>
+
+<div class="box box-tip">
+  <strong>💡 Removed 默认不勾选</strong>（删除操作不自动应用，需要手动确认）。
+</div>
+
+<!-- ================================================== -->
+<h2>📖 场景七：从 MAP/ELF 更新 ECU 地址</h2>
+
+<p>固件编译后生成了新的 MAP/ELF 文件，你需要把里面的符号地址更新到 A2L 中。</p>
+
+<pre><code># 先看看 MAP 文件里有哪些符号
+dotnet run --project src/A2lEditor.Cli -- map dump-symbols firmware.map
+
+# 预览地址匹配情况（不修改 A2L）
+dotnet run --project src/A2lEditor.Cli -- map validate firmware.map target.a2l
+
+# 执行更新（默认 dry-run，加 --backup 备份原文件）
+dotnet run --project src/A2lEditor.Cli -- map update firmware.map target.a2l --output updated.a2l --backup</code></pre>
+
+<p>GUI 方式：菜单 <kbd>Tools</kbd> → <kbd>Apply MAP...</kbd>，选择 MAP/ELF 文件后会弹出覆盖预览（匹配数/缺失数/多余数），确认后写入。</p>
+
+<!-- ================================================== -->
+<h2>📖 场景八：备份/交换 A2L 为 JSON</h2>
+
+<p>你想把 A2L 文件内容导出为 JSON，方便程序读取、版本对比或 CI 集成。</p>
+
+<p>JSON 序列化是代码库 API（目前无 CLI 命令）：</p>
+<pre><code>// C# 代码
+using A2lEditor.Core.Serialization;
+
+var serializer = new A2lDocumentSerializer();
+var doc = A2lDocument.LoadFromFile("BmsModel.a2l");
+
+// 写 JSON
+string json = serializer.SerializeToJson(doc);
+File.WriteAllText("BmsModel.json", json);
+
+// 从 JSON 读回
+var docBack = serializer.DeserializeFromJson(File.ReadAllText("BmsModel.json"));
+
+// 也支持 XML
+string xml = serializer.SerializeToXml(doc);</code></pre>
+
+<p>JSON 输出特点：<br>
+枚举输出为名称（<code>"UBYTE"</code>、<code>"V1_31"</code>）而非数字，缩进格式化，非 ASCII 字符保持原样。</p>
+
+<!-- ================================================== -->
+<h2>🔧 常用问题</h2>
+
+<div class="box box-warn">
+  <strong>Q: 打开文件时报解析错误？</strong><br>
+  检查文件编码是否为 UTF-8（a2l-editor 自动检测 UTF-8/16/32）。如果是其他编码，可以先用记事本另存为 UTF-8。
+</div>
+
+<div class="box box-warn">
+  <strong>Q: Excel 导入时报找不到 Sheet？</strong><br>
+  确认 Sheet 名称大小写完全匹配。可用 <code>--sheet</code> 指定；如果不指定，默认取第一个 Sheet。
+</div>
+
+<div class="box box-warn">
+  <strong>Q: 合并后某些修改没生效？</strong><br>
+  在交互式合并中，只有<strong>勾选了的条目</strong>才会应用。没勾选的修改保持 baseline 的旧值。取消勾选 <strong>Added</strong> 条目的结果是该块不会出现在合并结果中。
+</div>
+
+<div class="box box-warn">
+  <strong>Q: 构建报错？</strong><br>
+  确认已安装 .NET 8 SDK（<code>dotnet --version</code> 检查）。首次构建可能需要 <code>dotnet restore</code>。
+</div>
+
+<!-- ================================================== -->
+<h2>📋 全部 CLI 命令速查</h2>
+
+<table>
+  <tr><th>命令</th><th>用途</th><th>示例</th></tr>
+  <tr><td><code>validate &lt;file&gt;</code></td><td>验证 A2L 语法</td><td><code>validate samples/BmsModel.a2l</code></td></tr>
+  <tr><td><code>diff compare &lt;f1&gt; &lt;f2&gt;</code></td><td>对比两个 A2L</td><td><code>diff compare a.a2l b.a2l --brief</code></td></tr>
+  <tr><td><code>merge apply &lt;b&gt; &lt;m&gt;</code></td><td>合并变更</td><td><code>merge apply old.a2l new.a2l -o merged.a2l</code></td></tr>
+  <tr><td><code>skeleton generate &lt;xlsx&gt;</code></td><td>Excel → A2L</td><td><code>skeleton generate sig.xlsx -o out.a2l</code></td></tr>
+  <tr><td><code>skeleton export &lt;a2l&gt;</code></td><td>A2L → Excel</td><td><code>skeleton export file.a2l -o sig.xlsx</code></td></tr>
+  <tr><td><code>map update &lt;map&gt; &lt;a2l&gt;</code></td><td>MAP 地址更新</td><td><code>map update f.map t.a2l --output u.a2l</code></td></tr>
+  <tr><td><code>map dump-symbols &lt;map&gt;</code></td><td>查看 MAP 符号</td><td><code>map dump-symbols f.map</code></td></tr>
+</table>
+
+<hr style="margin:40px 0;border:none;border-top:1px solid var(--border);">
+<p style="text-align:center;color:var(--muted);font-size:13px;">
+  a2l-editor v0.20 · 基于 .NET 8 / WPF · GitHub: https://github.com/jasontaotao/a2l-editor
+</p>
+
+</body>
+</html>
